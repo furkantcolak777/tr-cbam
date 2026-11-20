@@ -1,25 +1,33 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 from fpdf import FPDF
 from pypdf import PdfReader
 from PIL import Image
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from datetime import datetime
+from datetime import datetime, timezone
+import tempfile
 import io
 import os
 import re
 
+try:
+    from rapidocr_onnxruntime import RapidOCR
+    OCR_AVAILABLE = True
+except Exception:
+    OCR_AVAILABLE = False
+
 # --- SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="TR-CBAM v2.0 | Kurumsal SKDM Uyum Kokpiti",
+    page_title="TR-CBAM v2.1 | Kurumsal SKDM Uyum Kokpiti",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # --- 2026 KESİN DÖNEM RESMİ VERİ TABANI ---
-# Kaynak 1: T.C. ETKB (2023 Hesaplama Dönemi Tüketim Noktası Emisyon Faktörleri)
+# Kaynak 1: T.C. ETKB Ulusal Elektrik Şebekesi Emisyon Faktörleri (Tüketim Noktası)
 ETKB_GRID_FACTORS = {
     "Dağıtım Hattı / OSB Bağlantısı (0,469 tCO₂/MWh)": 0.469,
     "İletim Hattı / Yüksek Gerilim (0,436 tCO₂/MWh)": 0.436,
@@ -30,90 +38,107 @@ ETKB_GRID_FACTORS = {
 NAT_GAS_EF = 0.00192  # tCO2 / m3
 
 # Kaynak 3: (EU) 2025/2621 & (EU) 2026/1740 Türkiye Özel Kesin Dönem Varsayılan Değerleri (tCO2e / Ton)
-# scope_type: "direct_only" (Demir-Çelik & Alüminyum) | "direct_and_indirect" (Çimento & Gübre)
+# eu_benchmark: AB Ücretsiz Tahsisat Kıyas Değeri (tCO2e/t) - Madde 31 kesintisi için referans
 GTIP_2026_DB = {
     "7208 - Sıcak Haddelenmiş Yassı Çelik Ürünler": {
-        "cn": "7208", "base_default": 2.428, "precursor_ef": 1.350, "scope": "direct_only", "sector": "Demir-Çelik"
+        "cn": "7208", "base_default": 2.428, "eu_benchmark": 1.370, "precursor_ef": 1.350, "scope": "direct_only", "sector": "Demir-Çelik"
     },
     "7209 - Soğuk Haddelenmiş Yassı Çelik Ürünler": {
-        "cn": "7209", "base_default": 2.580, "precursor_ef": 1.520, "scope": "direct_only", "sector": "Demir-Çelik"
+        "cn": "7209", "base_default": 2.580, "eu_benchmark": 1.480, "precursor_ef": 1.520, "scope": "direct_only", "sector": "Demir-Çelik"
     },
     "7210 - Galvanizli / Kaplamalı Yassı Çelik": {
-        "cn": "7210", "base_default": 2.710, "precursor_ef": 1.610, "scope": "direct_only", "sector": "Demir-Çelik"
+        "cn": "7210", "base_default": 2.710, "eu_benchmark": 1.550, "precursor_ef": 1.610, "scope": "direct_only", "sector": "Demir-Çelik"
     },
     "7214 20 00 - İnşaat Demiri (Nervürlü Çubuk)": {
-        "cn": "72142000", "base_default": 2.310, "precursor_ef": 1.240, "scope": "direct_only", "sector": "Demir-Çelik"
+        "cn": "72142000", "base_default": 2.310, "eu_benchmark": 1.290, "precursor_ef": 1.240, "scope": "direct_only", "sector": "Demir-Çelik"
     },
     "7306 19 00 - Kaynaklı Çelik Boru ve İçi Boş Profiller": {
-        "cn": "73061900", "base_default": 2.244, "precursor_ef": 1.480, "scope": "direct_only", "sector": "Demir-Çelik"
+        "cn": "73061900", "base_default": 2.244, "eu_benchmark": 1.420, "precursor_ef": 1.480, "scope": "direct_only", "sector": "Demir-Çelik"
     },
     "7318 15 - Cıvata, Vida, Somun ve Bağlantı Elemanları": {
-        "cn": "731815", "base_default": 5.430, "precursor_ef": 2.850, "scope": "direct_only", "sector": "Demir-Çelik"
+        "cn": "731815", "base_default": 5.430, "eu_benchmark": 2.150, "precursor_ef": 2.850, "scope": "direct_only", "sector": "Demir-Çelik"
     },
     "7601 - İşlenmemiş Alüminyum (Külçe / Biyet)": {
-        "cn": "7601", "base_default": 1.700, "precursor_ef": 1.150, "scope": "direct_only", "sector": "Alüminyum"
+        "cn": "7601", "base_default": 1.700, "eu_benchmark": 1.464, "precursor_ef": 1.150, "scope": "direct_only", "sector": "Alüminyum"
     },
     "7604 10 90 - Alüminyum Çubuk ve Profiller": {
-        "cn": "76041090", "base_default": 3.741, "precursor_ef": 2.150, "scope": "direct_only", "sector": "Alüminyum"
+        "cn": "76041090", "base_default": 3.741, "eu_benchmark": 1.850, "precursor_ef": 2.150, "scope": "direct_only", "sector": "Alüminyum"
     },
     "7606 - Alüminyum Sac, Levha ve Şeritler": {
-        "cn": "7606", "base_default": 2.714, "precursor_ef": 1.780, "scope": "direct_only", "sector": "Alüminyum"
+        "cn": "7606", "base_default": 2.714, "eu_benchmark": 1.720, "precursor_ef": 1.780, "scope": "direct_only", "sector": "Alüminyum"
     },
     "2523 29 00 - Gri Portland Çimento": {
-        "cn": "25232900", "base_default": 1.440, "precursor_ef": 0.000, "scope": "direct_and_indirect", "sector": "Çimento"
+        "cn": "25232900", "base_default": 1.440, "eu_benchmark": 0.693, "precursor_ef": 0.000, "scope": "direct_and_indirect", "sector": "Çimento"
     },
     "2523 30 00 - Alüminli Çimento": {
-        "cn": "25233000", "base_default": 1.950, "precursor_ef": 0.000, "scope": "direct_and_indirect", "sector": "Çimento"
+        "cn": "25233000", "base_default": 1.950, "eu_benchmark": 0.850, "precursor_ef": 0.000, "scope": "direct_and_indirect", "sector": "Çimento"
     },
     "3102 - Azotlu Mineral veya Kimyasal Gübreler": {
-        "cn": "3102", "base_default": 2.850, "precursor_ef": 1.400, "scope": "direct_and_indirect", "sector": "Gübre"
+        "cn": "3102", "base_default": 2.850, "eu_benchmark": 1.570, "precursor_ef": 1.400, "scope": "direct_and_indirect", "sector": "Gübre"
     },
 }
 
-# 2026-2028 Kesin Dönem Ceza Artış Oranları (Mark-up) & AB Ücretsiz Tahsisat Faz-Out Faktörü
+# (EU) 2023/956 Madde 31 Gerçek CBAM Faz Takvimi:
+# free_alloc_rate: AB üreticilerine kalan ücretsiz tahsisat oranı (2026: %97,5 -> ödeme %2,5 kesinti + benchmark üstü fark)
+# default_markup: Kanıtsız varsayılan değer ceza artışı (2026: +%10, 2027: +%20, 2028+: +%30)
 YEAR_RULES = {
-    "2026 (Kesin Dönem 1. Yıl - +%10 Ceza Artışı)": {"markup": 1.10, "cbam_phase_in": 0.975, "year": 2026},
-    "2027 (Kesin Dönem 2. Yıl - +%20 Ceza Artışı)": {"markup": 1.20, "cbam_phase_in": 0.950, "year": 2027},
-    "2028+ (Kesin Dönem 3. Yıl - +%30 Ceza Artışı)": {"markup": 1.30, "cbam_phase_in": 0.900, "year": 2028},
+    "2026 (Kesin Dönem 1. Yıl | +%10 Ceza | %2,5 Tahsisat Kesintisi)": {"markup": 1.10, "free_alloc_rate": 0.975, "year": 2026},
+    "2027 (Kesin Dönem 2. Yıl | +%20 Ceza | %5,0 Tahsisat Kesintisi)": {"markup": 1.20, "free_alloc_rate": 0.950, "year": 2027},
+    "2028 (Kesin Dönem 3. Yıl | +%30 Ceza | %10,0 Tahsisat Kesintisi)": {"markup": 1.30, "free_alloc_rate": 0.900, "year": 2028},
+    "2030 (Orta Vade | +%30 Ceza | %48,5 Tahsisat Kesintisi)": {"markup": 1.30, "free_alloc_rate": 0.515, "year": 2030},
+    "2034 (Tam Uygulama | +%30 Ceza | %100 Sertifika Yükümlülüğü)": {"markup": 1.30, "free_alloc_rate": 0.000, "year": 2034},
 }
 
-# --- AKILLI FATURA METİN TARAYICI (PDF OCR/TEXT PARSER) ---
-def extract_energy_from_pdf(uploaded_file):
+# --- AKILLI FATURA METİN & GÖRSEL OCR OKUYUCU ---
+def parse_energy_text(text):
+    kwh_matches = re.findall(r"([\d\.]+(?:,\d+)?)\s*(?:kWh|KWH|kwh)", text)
+    m3_matches = re.findall(r"([\d\.]+(?:,\d+)?)\s*(?:m3|m³|Sm3|SM3)", text)
+
+    def parse_tr_float(val_str):
+        cleaned = val_str.replace(".", "").replace(",", ".")
+        try:
+            return float(cleaned)
+        except ValueError:
+            return 0.0
+
+    kwh_vals = [parse_tr_float(x) for x in kwh_matches if parse_tr_float(x) > 10]
+    m3_vals = [parse_tr_float(x) for x in m3_matches if parse_tr_float(x) > 5]
+
+    detected_kwh = max(kwh_vals) if kwh_vals else None
+    detected_m3 = max(m3_vals) if m3_vals else None
+    return detected_kwh, detected_m3
+
+def extract_energy_from_file(uploaded_file):
     try:
-        reader = PdfReader(uploaded_file)
-        full_text = "\n".join([page.extract_text() or "" for page in reader.pages])
-        
-        # kWh yakalama (Örn: 45.250,00 kWh veya 45250 kWh)
-        kwh_matches = re.findall(r"([\d\.]+(?:,\d+)?)\s*(?:kWh|KWH|kwh)", full_text)
-        # m3 yakalama (Örn: 3.200 m3 veya 3200 sm3)
-        m3_matches = re.findall(r"([\d\.]+(?:,\d+)?)\s*(?:m3|m³|Sm3|SM3)", full_text)
-
-        def parse_tr_float(val_str):
-            cleaned = val_str.replace(".", "").replace(",", ".")
-            try:
-                return float(cleaned)
-            except ValueError:
-                return 0.0
-
-        kwh_vals = [parse_tr_float(x) for x in kwh_matches if parse_tr_float(x) > 10]
-        m3_vals = [parse_tr_float(x) for x in m3_matches if parse_tr_float(x) > 5]
-
-        detected_kwh = max(kwh_vals) if kwh_vals else None
-        detected_m3 = max(m3_vals) if m3_vals else None
-        return detected_kwh, detected_m3, True if full_text.strip() else False
+        name_lower = uploaded_file.name.lower()
+        if name_lower.endswith(".pdf"):
+            reader = PdfReader(uploaded_file)
+            full_text = "\n".join([page.extract_text() or "" for page in reader.pages])
+            return parse_energy_text(full_text)
+        elif OCR_AVAILABLE and any(name_lower.endswith(ext) for ext in [".png", ".jpg", ".jpeg"]):
+            ocr = RapidOCR()
+            img = Image.open(uploaded_file).convert("RGB")
+            result, _ = ocr(np.array(img))
+            if result:
+                ocr_text = "\n".join([line[1] for line in result])
+                return parse_energy_text(ocr_text)
+        return None, None
     except Exception:
-        return None, None, False
+        return None, None
 
-# --- HESAPLAMA MOTORU ---
-def calculate_cbam_row(gtip_label, tonnage, elec_kwh, gas_m3, ets_price, local_carbon_price, grid_ef, markup, phase_in):
+# --- MADDE 31 UYUMLU HESAPLAMA MOTORU ---
+def calculate_cbam_row(
+    gtip_label, tonnage, elec_kwh, gas_m3,
+    ets_price, local_carbon_price, grid_ef,
+    markup, free_alloc_rate, supplier_reduction_pct
+):
     info = GTIP_2026_DB[gtip_label]
-    
-    # Tesis Emisyonları
+
+    # Tesis Emisyonları (tCO2e)
     scope1_gas = gas_m3 * NAT_GAS_EF
     scope2_elec = (elec_kwh / 1000.0) * grid_ef
     precursor_em = tonnage * info["precursor_ef"]
 
-    # Kapsam kuralı (Demir-Çelik/Alüminyum: Sadece Direct + Precursor | Çimento/Gübre: Direct + Indirect)
     if info["scope"] == "direct_only":
         actual_billable_em = scope1_gas + precursor_em
         scope_note = "Yalnızca Doğrudan (Scope 1 + Precursor) — Elektrik Hariç (Annex II)"
@@ -121,19 +146,32 @@ def calculate_cbam_row(gtip_label, tonnage, elec_kwh, gas_m3, ets_price, local_c
         actual_billable_em = scope1_gas + scope2_elec + precursor_em
         scope_note = "Doğrudan + Dolaylı (Scope 1 + Scope 2 + Precursor) Dahil"
 
-    # Tedarikçi verisi de alınırsa (Precursor %40 iyileşme potansiyeli)
-    best_case_em = actual_billable_em - (precursor_em * 0.40)
+    # Tedarikçi EAF / Gerçek Veri İyileştirmesi
+    best_case_em = max(0.0, actual_billable_em - (precursor_em * (supplier_reduction_pct / 100.0)))
 
-    # Kanıtsız Beyan (2026 TR Baz Default * Yıllık Mark-up)
+    # Kanıtsız Beyan (2026 TR Baz Default * Yıllık Ceza Artışı)
     default_ef_with_markup = info["base_default"] * markup
     default_total_em = tonnage * default_ef_with_markup
 
-    # Net Sertifika Maliyeti = Emisyon * (AB ETS - Yerel Karbon Fiyatı) * CBAM Faz Oranı
-    effective_carbon_price = max(0.0, ets_price - local_carbon_price) * phase_in
+    # AB Madde 31 Ücretsiz Tahsisat Düşümü:
+    # İthalatçının teslim etmesi gereken sertifika miktarı = max(0, Gömülü Emisyon - (Tonaj * EU_Benchmark * free_alloc_rate))
+    free_allocation_deduction = tonnage * info["eu_benchmark"] * free_alloc_rate
 
-    tax_default = default_total_em * effective_carbon_price
-    tax_actual = actual_billable_em * effective_carbon_price
-    tax_best = best_case_em * effective_carbon_price
+    cert_default = max(0.0, default_total_em - free_allocation_deduction)
+    cert_actual = max(0.0, actual_billable_em - free_allocation_deduction)
+    cert_best = max(0.0, best_case_em - free_allocation_deduction)
+
+    # Net Sertifika Birim Fiyatı (AB ETS - TR-ETS Mahsubu)
+    net_carbon_price = max(0.0, ets_price - local_carbon_price)
+
+    # Net Ödenecek Yıllık CBAM Sertifika Maliyeti (€)
+    tax_default = cert_default * net_carbon_price
+    tax_actual = cert_actual * net_carbon_price
+    tax_best = cert_best * net_carbon_price
+
+    # Brüt Karbon Değeri (Ücretsiz tahsisat düşülmeden önceki ham değer kıyaslaması)
+    gross_default = default_total_em * net_carbon_price
+    gross_actual = actual_billable_em * net_carbon_price
 
     direct_savings = max(0.0, tax_default - tax_actual)
     supplier_bonus = max(0.0, tax_actual - tax_best)
@@ -145,40 +183,47 @@ def calculate_cbam_row(gtip_label, tonnage, elec_kwh, gas_m3, ets_price, local_c
         "scope1_gas": scope1_gas,
         "scope2_elec": scope2_elec,
         "precursor_em": precursor_em,
+        "eu_benchmark": info["eu_benchmark"],
+        "free_alloc_deduction": free_allocation_deduction,
         "base_default": info["base_default"],
         "default_ef_markup": default_ef_with_markup,
         "default_total_em": default_total_em,
         "actual_billable_em": actual_billable_em,
         "best_case_em": best_case_em,
+        "cert_default": cert_default,
+        "cert_actual": cert_actual,
+        "cert_best": cert_best,
         "tax_default": tax_default,
         "tax_actual": tax_actual,
         "tax_best": tax_best,
+        "gross_default": gross_default,
+        "gross_actual": gross_actual,
         "direct_savings": direct_savings,
         "supplier_bonus": supplier_bonus,
-        "effective_price": effective_carbon_price,
+        "net_carbon_price": net_carbon_price,
     }
 
 # --- AB CBAM REGISTRY XML ÜRETİCİSİ ---
 def generate_cbam_xml(company_name, broker_name, year, results_list):
-    root = ET.Element("CBAMQuarterlyOrAnnualReport", xmlns="urn:eu:taxud:cbam:v2026")
-    header = ET.SubElement(root, "ReportHeader")
-    ET.SubElement(header, "ReportingPeriodYear").text = str(year)
-    ET.SubElement(header, "GeneratedAtUTC").text = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    ET.SubElement(header, "ExporterInstallationName").text = company_name
+    root = ET.Element("CBAMDefinitiveDeclaration", xmlns="urn:eu:taxud:cbam:definitive:v2026")
+    header = ET.SubElement(root, "DeclarationHeader")
+    ET.SubElement(header, "ReportingYear").text = str(year)
+    ET.SubElement(header, "GeneratedAtUTC").text = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ET.SubElement(header, "InstallationOperatorName").text = company_name
     ET.SubElement(header, "CountryOfOrigin").text = "TR"
-    ET.SubElement(header, "CustomsDeclarantRepresentative").text = broker_name
-    ET.SubElement(header, "LegalBasis").text = "Regulation (EU) 2023/956; IR (EU) 2025/2621; IR (EU) 2026/1740"
+    ET.SubElement(header, "AuthorisedDeclarantRepresentative").text = broker_name
+    ET.SubElement(header, "RegulatoryReference").text = "Reg (EU) 2023/956 Art.7 & Art.31; IR (EU) 2025/2621; IR (EU) 2026/1740"
 
-    goods_el = ET.SubElement(root, "ImportedCBAMGoods")
+    goods_el = ET.SubElement(root, "CBAMImportedGoods")
     for idx, item in enumerate(results_list, start=1):
-        good = ET.SubElement(goods_el, "CBAMGoodItem", sequence=str(idx))
+        good = ET.SubElement(goods_el, "GoodItem", sequence=str(idx))
         ET.SubElement(good, "CNCode").text = str(item["cn"])
         ET.SubElement(good, "Sector").text = str(item["sector"])
         ET.SubElement(good, "NetMassTonnes").text = f"{item['tonnage']:.3f}"
-        ET.SubElement(good, "CalculationMethod").text = "ActualVerifiedInstallationData_AnnexIV"
         ET.SubElement(good, "ActualEmbeddedEmissions_tCO2e").text = f"{item['actual_billable_em']:.4f}"
-        ET.SubElement(good, "DefaultFallbackEmissions_tCO2e").text = f"{item['default_total_em']:.4f}"
-        ET.SubElement(good, "EstimatedCBAMCertificatePayable_EUR").text = f"{item['tax_actual']:.2f}"
+        ET.SubElement(good, "FreeAllocationAdjustment_tCO2e").text = f"{item['free_alloc_deduction']:.4f}"
+        ET.SubElement(good, "NetCBAMCertificatesToSurrender").text = f"{item['cert_actual']:.4f}"
+        ET.SubElement(good, "NetCertificateLiability_EUR").text = f"{item['tax_actual']:.2f}"
         ET.SubElement(good, "AvoidedDefaultPenalty_EUR").text = f"{item['direct_savings']:.2f}"
 
     rough_string = ET.tostring(root, "utf-8")
@@ -199,120 +244,144 @@ def generate_corporate_pdf(meta, res, logo_bytes=None):
     pdf.add_page()
     font_name = setup_unicode_font(pdf)
 
-    # Logo Varsa Üst Sol Köşeye Ekle
+    temp_logo_path = None
     if logo_bytes:
         try:
             img = Image.open(io.BytesIO(logo_bytes))
-            temp_logo = "/tmp/temp_broker_logo.png"
-            img.save(temp_logo, format="PNG")
-            pdf.image(temp_logo, x=12, y=10, w=26)
-            pdf.set_xy(42, 12)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+                img.save(tmp.name, format="PNG")
+                temp_logo_path = tmp.name
+            pdf.image(temp_logo_path, x=12, y=10, w=25)
+            pdf.set_xy(40, 12)
         except Exception:
             pdf.set_xy(10, 12)
     else:
         pdf.set_xy(10, 12)
 
-    # Üst Kurumsal Başlık
     pdf.set_fill_color(15, 23, 42)
     pdf.set_text_color(255, 255, 255)
-    pdf.set_font(font_name, "B", 12)
-    pdf.cell(0, 11, "TR-CBAM KESİN DÖNEM PRE-AUDIT & SINIR VERGİSİ RAPORU", ln=True, align="C", fill=True)
+    pdf.set_font(font_name, "B", 11.5)
+    pdf.cell(0, 11, "TR-CBAM KESİN DÖNEM PRE-AUDIT & MADDE 31 SERTİFİKA RAPORU", ln=True, align="C", fill=True)
 
     pdf.set_text_color(80, 80, 80)
     pdf.set_font(font_name, "", 8)
-    pdf.cell(0, 6, f"Düzenlenme Tarihi: {datetime.now().strftime('%d.%m.%Y %H:%M')}  |  Belge No: SKDM-{int(datetime.now().timestamp())}  |  Dönem: {meta['year']}", ln=True, align="C")
-    pdf.ln(5)
-
-    # 1. İhracatçı & Mevzuat Kapsamı
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font(font_name, "B", 10)
-    pdf.cell(0, 7, "1. İHRACATÇI FİRMA VE SEVKİYAT KAPSAM BİLGİLERİ", ln=True)
-    pdf.set_font(font_name, "", 9)
-    pdf.cell(0, 5.5, f"İhracatçı Kuruluş: {meta['company_name']}", ln=True)
-    pdf.cell(0, 5.5, f"Ürün / CN (GTİP) Kodu: {meta['gtip_label']}  ({res['sector']} Sektörü)", ln=True)
-    pdf.cell(0, 5.5, f"AB İthalat Miktarı: {meta['tonnage']:,.2f} Ton  |  Net Karbon Fiyatı: {res['effective_price']:.2f} EUR/tCO2e", ln=True)
-    pdf.cell(0, 5.5, f"Mevzuat Kapsam Kuralı: {res['scope_note']}", ln=True)
-    pdf.cell(0, 5.5, f"Enerji Kanıt Durumu: {meta['invoice_status']}", ln=True)
+    pdf.cell(0, 6, f"Düzenlenme: {datetime.now().strftime('%d.%m.%Y %H:%M')}  |  Belge No: SKDM-{int(datetime.now().timestamp())}  |  Beyan Yılı: {meta['year']}", ln=True, align="C")
     pdf.ln(4)
 
-    # 2. Finansal Kıyaslama Tablosu
+    # 1. Sevkiyat & Kapsam
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font(font_name, "B", 9.8)
+    pdf.cell(0, 6.5, "1. İHRACATÇI KURULUŞ VE MEVZUAT KAPSAM BİLGİLERİ", ln=True)
+    pdf.set_font(font_name, "", 8.8)
+    pdf.cell(0, 5.2, f"İhracatçı Kuruluş: {meta['company_name']}", ln=True)
+    pdf.cell(0, 5.2, f"Ürün / CN (GTİP) Kodu: {meta['gtip_label']}  ({res['sector']} Sektörü)", ln=True)
+    pdf.cell(0, 5.2, f"AB Sevkiyat Miktarı: {meta['tonnage']:,.2f} Ton  |  Net Karbon Fiyatı (AB ETS - TR Mahsup): {res['net_carbon_price']:.2f} EUR/tCO2e", ln=True)
+    pdf.cell(0, 5.2, f"Emisyon Kapsam Kuralı: {res['scope_note']}", ln=True)
+    pdf.cell(0, 5.2, f"Enerji Kanıt Belgesi: {meta['invoice_status']}", ln=True)
+    pdf.ln(3.5)
+
+    # 2. Finansal Kıyaslama Tablosu (Madde 31 Net Sertifika Yükü)
     pdf.set_fill_color(241, 245, 249)
-    pdf.set_font(font_name, "B", 10)
-    pdf.cell(0, 8, "2. AB SINIRDA KARBON VERGİSİ (SKDM) MALİYET KIYASLAMASI", ln=True, fill=True)
+    pdf.set_font(font_name, "B", 9.8)
+    pdf.cell(0, 7.5, "2. AB SKDM SERTİFİKA YÜKÜMLÜLÜĞÜ KIYASLAMASI (MADDE 31 UYUMLU)", ln=True, fill=True)
     pdf.ln(1.5)
 
-    pdf.set_font(font_name, "B", 8.5)
-    pdf.cell(92, 7.5, "Beyan ve Doğrulama Senaryosu", border=1)
-    pdf.cell(48, 7.5, "Hesaplanan Emisyon", border=1, align="C")
-    pdf.cell(50, 7.5, "SKDM Sertifika Maliyeti", border=1, align="R", ln=True)
+    pdf.set_font(font_name, "B", 8.2)
+    pdf.cell(78, 7, "Beyan Senaryosu", border=1)
+    pdf.cell(36, 7, "Toplam Emisyon", border=1, align="C")
+    pdf.cell(36, 7, "Net Sertifika (Adet)", border=1, align="C")
+    pdf.cell(40, 7, "Ödenecek Tutar", border=1, align="R", ln=True)
 
-    pdf.set_font(font_name, "", 8.5)
-    pdf.cell(92, 7.5, f"A: Kanıtsız Beyan (TR Default + Ceza Katsayısı)", border=1)
-    pdf.cell(48, 7.5, f"{res['default_total_em']:,.2f} tCO2e", border=1, align="C")
-    pdf.cell(50, 7.5, f"{res['tax_default']:,.2f} EUR", border=1, align="R", ln=True)
+    pdf.set_font(font_name, "", 8.2)
+    pdf.cell(78, 7, "A: Kanıtsız Beyan (TR Default + Ceza)", border=1)
+    pdf.cell(36, 7, f"{res['default_total_em']:,.2f} t", border=1, align="C")
+    pdf.cell(36, 7, f"{res['cert_default']:,.2f}", border=1, align="C")
+    pdf.cell(40, 7, f"{res['tax_default']:,.2f} EUR", border=1, align="R", ln=True)
 
-    pdf.cell(92, 7.5, "B: Kanıtlı Tesis Verisi (Fatura & Sayaç Bazlı)", border=1)
-    pdf.cell(48, 7.5, f"{res['actual_billable_em']:,.2f} tCO2e", border=1, align="C")
-    pdf.cell(50, 7.5, f"{res['tax_actual']:,.2f} EUR", border=1, align="R", ln=True)
+    pdf.cell(78, 7, "B: Kanıtlı Tesis Verisi (Fatura & Sayaç)", border=1)
+    pdf.cell(36, 7, f"{res['actual_billable_em']:,.2f} t", border=1, align="C")
+    pdf.cell(36, 7, f"{res['cert_actual']:,.2f}", border=1, align="C")
+    pdf.cell(40, 7, f"{res['tax_actual']:,.2f} EUR", border=1, align="R", ln=True)
 
-    pdf.cell(92, 7.5, "C: Tesis + Tedarikçi Doğrulanmış Öncül Veri", border=1)
-    pdf.cell(48, 7.5, f"{res['best_case_em']:,.2f} tCO2e", border=1, align="C")
-    pdf.cell(50, 7.5, f"{res['tax_best']:,.2f} EUR", border=1, align="R", ln=True)
+    pdf.cell(78, 7, "C: Tesis + Tedarikçi Doğrulanmış Veri", border=1)
+    pdf.cell(36, 7, f"{res['best_case_em']:,.2f} t", border=1, align="C")
+    pdf.cell(36, 7, f"{res['cert_best']:,.2f}", border=1, align="C")
+    pdf.cell(40, 7, f"{res['tax_best']:,.2f} EUR", border=1, align="R", ln=True)
 
-    pdf.set_font(font_name, "B", 9.5)
+    pdf.set_font(font_name, "B", 9.2)
     pdf.set_fill_color(220, 252, 231)
-    pdf.cell(140, 9, "DOĞRUDAN KORUNAN SINIR VERGİSİ AVANTAJI (A - B)", border=1, fill=True)
-    pdf.cell(50, 9, f"+{res['direct_savings']:,.2f} EUR", border=1, align="R", ln=True, fill=True)
-    pdf.ln(4)
+    pdf.cell(150, 8.5, "DOĞRUDAN KORUNAN NET SKDM SERTİFİKA TASARRUFU (A - B)", border=1, fill=True)
+    pdf.cell(40, 8.5, f"+{res['direct_savings']:,.2f} EUR", border=1, align="R", ln=True, fill=True)
+    pdf.ln(3.5)
 
-    # 3. Teknik Emisyon Kırılımı
-    pdf.set_font(font_name, "B", 10)
-    pdf.cell(0, 7, "3. TESİS EMİSYON KIRILIMI VE TEDARİK ZİNCİRİ NOTU", ln=True)
-    pdf.set_font(font_name, "", 8.8)
-    pdf.cell(0, 5.5, f"• Scope 1 (Doğalgaz Yanma Emisyonu - 56,1 tCO2/TJ): {res['scope1_gas']:,.2f} tCO2e", ln=True)
-    pdf.cell(0, 5.5, f"• Scope 2 (Elektrik Tüketim Emisyonu - ETKB Katsayısı): {res['scope2_elec']:,.2f} tCO2e ({'Kapsam Dışı' if 'Hariç' in res['scope_note'] else 'Hesaba Dahil'})", ln=True)
-    pdf.cell(0, 5.5, f"• Precursor (Öncül Hammadde Gömülü Emisyonu): {res['precursor_em']:,.2f} tCO2e", ln=True)
+    # 3. Emisyon & Ücretsiz Tahsisat Düşüm Detayı
+    pdf.set_font(font_name, "B", 9.8)
+    pdf.cell(0, 6.5, "3. TESİS EMİSYON KIRILIMI VE MADDE 31 ÜCRETSİZ TAHSİSAT DÜŞÜMÜ", ln=True)
+    pdf.set_font(font_name, "", 8.5)
+    pdf.cell(0, 5.0, f"• Scope 1 (Doğalgaz Yanma Emisyonu - 56,1 tCO2/TJ): {res['scope1_gas']:,.2f} tCO2e", ln=True)
+    pdf.cell(0, 5.0, f"• Scope 2 (Elektrik Tüketimi - ETKB Katsayısı): {res['scope2_elec']:,.2f} tCO2e ({'Kapsam Dışı' if 'Hariç' in res['scope_note'] else 'Hesaba Dahil'})", ln=True)
+    pdf.cell(0, 5.0, f"• Precursor (Öncül Hammadde Gömülü Emisyonu): {res['precursor_em']:,.2f} tCO2e", ln=True)
+    pdf.cell(0, 5.0, f"• AB Ücretsiz Tahsisat Düşümü (Madde 31 - Benchmark {res['eu_benchmark']:.3f} t/t): -{res['free_alloc_deduction']:,.2f} tCO2e", ln=True)
     pdf.ln(2.5)
 
     if res["supplier_bonus"] > 0:
         pdf.set_fill_color(254, 243, 199)
-        pdf.set_font(font_name, "I", 8.2)
-        pdf.multi_cell(0, 4.8, f"TEDARİKÇİ OPTİMİZASYON NOTU: Öncül hammadde tedarikçinizden (EU) 2025/2547 uyarınca akredite doğrulanmış emisyon beyanı temin edilmesi durumunda, bu sevkiyatta ilave +{res['supplier_bonus']:,.2f} EUR daha sertifika maliyeti düşüşü sağlanabilir.", border=1, fill=True)
-        pdf.ln(4)
+        pdf.set_font(font_name, "I", 8.0)
+        pdf.multi_cell(0, 4.6, f"TEDARİKÇİ OPTİMİZASYON NOTU: Öncül hammadde tedarikçinizden (EU) 2025/2547 uyarınca akredite doğrulanmış emisyon beyanı alınması halinde, bu sevkiyatta ilave +{res['supplier_bonus']:,.2f} EUR daha net sertifika maliyeti avantajı elde edilebilir.", border=1, fill=True)
+        pdf.ln(3.5)
 
-    # 4. Yetkili Gümrük Müşavirliği Kaşe & Resmi Mevzuat Dipnotu
-    pdf.set_font(font_name, "B", 8.8)
-    pdf.cell(0, 6, f"Raporu Düzenleyen Yetkili Kurum / Gümrük Müşavirliği: {meta['broker_name']}", ln=True)
+    # 4. Kaşe & Resmi Mevzuat Dipnotu
+    pdf.set_font(font_name, "B", 8.6)
+    pdf.cell(0, 5.5, f"Raporu Düzenleyen Yetkili Kurum / Gümrük Müşavirliği: {meta['broker_name']}", ln=True)
     pdf.ln(1.5)
-    pdf.set_font(font_name, "", 7.4)
+    pdf.set_font(font_name, "", 7.2)
     pdf.set_text_color(75, 75, 75)
-    pdf.multi_cell(0, 4.0, "Resmi Mevzuat ve Katsayı Dayanağı: Bu analiz; (EU) 2023/956 sayılı AB SKDM Tüzüğü (Annex II & Annex IV), kesin dönem ülke bazlı varsayılan değerleri belirleyen (EU) 2025/2621 ve (EU) 2026/1740 sayılı Uygulama Tüzükleri, yakıt emisyon faktörlerini düzenleyen (EU) 2023/1773 sayılı Tüzük ile T.C. Enerji ve Tabii Kaynaklar Bakanlığı (ETKB) Tüketim Noktası Ulusal Elektrik Şebekesi Emisyon Faktörleri esas alınarak hazırlanmıştır. Kesin AB gümrük beyanında akredite doğrulayıcı ((EU) 2025/2547) onayı gereklidir.")
-    pdf.ln(1.2)
-    pdf.multi_cell(0, 4.0, "Zero-Retention Veri Güvenliği Beyanı: Bu platforma yüklenen fatura, enerji tüketim ve sevkiyat verileri hiçbir veritabanında kalıcı olarak saklanmaz; oturum belleğinde anlık işlenir ve oturum kapandığında kalıcı olarak silinir.")
+    pdf.multi_cell(0, 3.8, "Resmi Mevzuat ve Katsayı Dayanağı: Hesaplamalarda (EU) 2023/956 sayılı AB SKDM Tüzüğü (Annex II, Annex IV ve Madde 31 Ücretsiz Tahsisat Faz Takvimi), kesin dönem ülke bazlı varsayılan değerleri belirleyen (EU) 2025/2621 ve (EU) 2026/1740 sayılı Uygulama Tüzükleri, yakıt emisyon faktörlerini düzenleyen (EU) 2023/1773 sayılı Tüzük ile T.C. Enerji ve Tabii Kaynaklar Bakanlığı (ETKB) Tüketim Noktası Ulusal Elektrik Şebekesi Emisyon Faktörleri esas alınmıştır. Kesin AB gümrük beyanında akredite doğrulayıcı ((EU) 2025/2547) onayı zorunludur.")
+    pdf.ln(1.0)
+    pdf.multi_cell(0, 3.8, "Zero-Retention Veri Güvenliği Beyanı: Yüklenen fatura, enerji tüketim ve sevkiyat verileri hiçbir veritabanında kalıcı olarak depolanmaz; oturum belleğinde anlık işlenir ve oturum kapandığında kalıcı olarak silinir.")
 
-    return bytes(pdf.output())
+    out_bytes = bytes(pdf.output())
+    if temp_logo_path and os.path.exists(temp_logo_path):
+        try:
+            os.remove(temp_logo_path)
+        except Exception:
+            pass
+    return out_bytes
 
-# --- YAN MENÜ (GLOBAL PARAMETRELER & WHITE-LABEL AYARLARI) ---
+# --- YAN MENÜ (GLOBAL PARAMETRELER) ---
 with st.sidebar:
     st.header("⚙️ Kurumsal & Mevzuat Ayarları")
     broker_name = st.text_input("Gümrük Müşavirliği / Danışmanlık Unvanı", value="İÜ Girişim Hub — R&D Division")
     broker_logo = st.file_uploader("Kurumsal Logo Yükle (PDF Anteti İçin)", type=["png", "jpg", "jpeg"])
-    
+
     st.divider()
-    st.subheader("📅 AB SKDM Dönem & Piyasa Parametreleri")
-    year_choice = st.selectbox("Beyan Yılı & Ceza Çarpanı", list(YEAR_RULES.keys()))
+    st.subheader("📅 AB Madde 31 & Piyasa Parametreleri")
+    year_choice = st.selectbox("Beyan Yılı & Faz Takvimi", list(YEAR_RULES.keys()))
     grid_choice = st.selectbox("ETKB Elektrik Şebeke Bağlantı Tipi", list(ETKB_GRID_FACTORS.keys()))
     ets_price = st.number_input("AB ETS Karbon Fiyatı (€ / tCO₂e)", min_value=10.0, value=74.50, step=0.5)
-    local_carbon_price = st.number_input("Türkiye İçi Ödenen Karbon Bedeli (€ / tCO₂e)", min_value=0.0, value=0.0, step=1.0, help="Türkiye Emisyon Ticaret Sistemi kapsamında ödenen tutar AB vergisinden mahsup edilir.")
+    local_carbon_price = st.number_input(
+        "TR-ETS / Türkiye İçi Ödenen Karbon Bedeli (€ / tCO₂e)",
+        min_value=0.0, value=0.0, step=1.0,
+        help="Türkiye Emisyon Ticaret Sistemi (TR-ETS) kapsamında ödenen karbon fiyatı AB SKDM sertifika yükünden birebir mahsup edilir."
+    )
+    supplier_reduction_pct = st.slider(
+        "Tedarikçi EAF / Hurda Bazlı Emisyon İyileşme Oranı (%)",
+        min_value=0, max_value=70, value=40, step=5,
+        help="Öncül hammadde tedarikçisinin elektrik ark ocağı (EAF) veya düşük karbonlu üretim verisi sunması halindeki tahmini emisyon düşüşü."
+    )
 
     st.divider()
-    st.caption("🔒 **Zero-Retention:** Tüm veriler yalnızca aktif oturum RAM belleğinde işlenir.")
+    st.caption("🔒 **Zero-Retention:** Tüm veriler yalnızca aktif oturum belleğinde işlenir; veritabanına kaydedilmez.")
 
 # --- ANA EKRAN BAŞLIĞI ---
-st.title("TR-CBAM v2.0 | Kurumsal SKDM Uyum & Denetim Kokpiti")
-st.markdown("**(EU) 2025/2621 & 2026/1740 Kesin Dönem Türkiye Katsayıları + ETKB Şebeke Motoru + AB Registry XML Üreticisi**")
+st.title("TR-CBAM v2.1 | Kurumsal SKDM Uyum & Denetim Kokpiti")
+st.markdown("**(EU) 2023/956 Madde 31 Faz Takvimi + (EU) 2025/2621 & 2026/1740 Türkiye Katsayıları + Görsel/PDF Fatura OCR + AB XML**")
 
-tab1, tab2, tab3 = st.tabs(["📄 Tekil Sevkiyat & Fatura OCR Analizi", "📊 Çoklu Kalem (Excel) & AB XML Çıktısı", "📚 2026 Türkiye Resmi Katsayı Tablosu"])
+tab1, tab2, tab3 = st.tabs([
+    "📄 Tekil Sevkiyat & Fatura OCR Analizi",
+    "📊 Çoklu Kalem (Excel) & AB XML Çıktısı",
+    "📚 2026 Türkiye Resmi Katsayı & Benchmark Tablosu"
+])
 
 # ==============================================================================
 # SEKME 1: TEKİL SEVKİYAT + FATURA OCR + GRAFİKLER + KURUMSAL PDF + XML
@@ -322,12 +391,15 @@ with tab1:
 
     with col_left:
         st.subheader("1. Tesis ve Fatura Verileri")
-        invoice_file = st.file_uploader("Opsiyonel: Elektrik veya Doğalgaz Faturası Yükle (PDF - Otomatik Okuma)", type=["pdf"])
-        
+        invoice_file = st.file_uploader(
+            "Opsiyonel: Elektrik veya Doğalgaz Faturası Yükle (PDF / JPG / PNG - Otomatik Okuma)",
+            type=["pdf", "png", "jpg", "jpeg"]
+        )
+
         auto_kwh, auto_m3 = 45000.0, 3200.0
         invoice_status = "Kanıt Belgesi Henüz Yüklenmedi (Ön Simülasyon)"
         if invoice_file is not None:
-            det_kwh, det_m3, readable = extract_energy_from_pdf(invoice_file)
+            det_kwh, det_m3 = extract_energy_from_file(invoice_file)
             invoice_status = f"Doğrulandı: {invoice_file.name}"
             if det_kwh:
                 auto_kwh = det_kwh
@@ -336,7 +408,7 @@ with tab1:
                 auto_m3 = det_m3
                 st.success(f"Faturadan otomatik doğalgaz tüketimi okundu: **{det_m3:,.2f} m³**")
             if not det_kwh and not det_m3:
-                st.info("PDF yüklendi; taranmış görsel formatındaysa tüketim değerlerini aşağıdan manuel onaylayabilirsiniz.")
+                st.info("Fatura dosyası eklendi; tüketim değerlerini aşağıdan kontrol edip onaylayabilirsiniz.")
 
         with st.form("single_cbam_form"):
             company_name = st.text_input("İhracatçı Firma Unvanı", value="Örnek Metal ve Çelik Sanayi A.Ş.")
@@ -354,20 +426,19 @@ with tab1:
         res = calculate_cbam_row(
             gtip_label, tonnage, elec_kwh, gas_m3,
             ets_price, local_carbon_price, grid_ef,
-            yr["markup"], yr["cbam_phase_in"]
+            yr["markup"], yr["free_alloc_rate"], supplier_reduction_pct
         )
 
         with col_right:
-            st.subheader("2. Finansal Etki (The Money Screen)")
+            st.subheader("2. Finansal Etki (Madde 31 Net Sertifika Yükü)")
             m1, m2, m3 = st.columns(3)
-            m1.metric("Kanıtsız Ceza (A)", f"{res['tax_default']:,.0f} €")
-            m2.metric("Kanıtlı Beyan (B)", f"{res['tax_actual']:,.0f} €")
+            m1.metric("Kanıtsız Ceza (A)", f"{res['tax_default']:,.0f} €", help=f"Sertifika: {res['cert_default']:,.1f} adet")
+            m2.metric("Kanıtlı Beyan (B)", f"{res['tax_actual']:,.0f} €", help=f"Sertifika: {res['cert_actual']:,.1f} adet")
             m3.metric("Net Vergi Tasarrufu", f"+{res['direct_savings']:,.0f} €", delta=f"Ek Tedarikçi Fırsatı: +{res['supplier_bonus']:,.0f} €")
 
-            # Plotly Kıyaslama Grafiği
             fig = go.Figure(data=[
                 go.Bar(
-                    name="Maliyet (€)",
+                    name="Net Ödenecek Tutar (€)",
                     x=["A: Kanıtsız Default", "B: Tesis Gerçek Verisi", "C: Tedarikçi Verisi Dahil"],
                     y=[res["tax_default"], res["tax_actual"], res["tax_best"]],
                     marker_color=["#ef4444", "#3b82f6", "#10b981"],
@@ -376,7 +447,7 @@ with tab1:
                 )
             ])
             fig.update_layout(
-                title="Senaryo Bazlı AB Sınırda Karbon Vergisi Yükü (€)",
+                title=f"{yr['year']} Yılı Net AB SKDM Sertifika Maliyeti Kıyaslaması (€)",
                 height=310,
                 margin=dict(l=20, r=20, t=40, b=20),
                 yaxis_title="Euro (€)"
@@ -384,9 +455,12 @@ with tab1:
             st.plotly_chart(fig, use_container_width=True)
 
         st.divider()
-        st.info(f"**Mevzuat Kapsam Bilgisi:** {res['scope_note']} | **Uygulanan 2026 TR Ceza Katsayısı:** `{res['default_ef_markup']:.3f} tCO₂e/t`")
+        st.info(
+            f"**Mevzuat Kapsamı:** {res['scope_note']} | "
+            f"**2026 TR Ceza Katsayısı:** `{res['default_ef_markup']:.3f} tCO₂e/t` | "
+            f"**Madde 31 Ücretsiz Tahsisat Düşümü:** `-{res['free_alloc_deduction']:,.2f} tCO₂e`"
+        )
 
-        # Çıktı Butonları (Kurumsal PDF + Resmi AB XML)
         b_col1, b_col2 = st.columns(2)
         meta_data = {
             "company_name": company_name,
@@ -406,7 +480,7 @@ with tab1:
         b_col1.download_button(
             label="📥 Kurumsal Pre-Audit PDF Raporunu İndir",
             data=pdf_bytes,
-            file_name=f"TR_CBAM_2026_Rapor_{company_name.replace(' ', '_')}.pdf",
+            file_name=f"TR_CBAM_{yr['year']}_Rapor_{company_name.replace(' ', '_')}.pdf",
             mime="application/pdf",
             use_container_width=True
         )
@@ -455,7 +529,7 @@ with tab2:
                 g_label = row["GTIP_Kodu"] if row["GTIP_Kodu"] in GTIP_2026_DB else list(GTIP_2026_DB.keys())[0]
                 r = calculate_cbam_row(
                     g_label, float(row["Tonaj"]), float(row["Elektrik_kWh"]), float(row["Dogalgaz_m3"]),
-                    ets_price, local_carbon_price, grid_ef, yr["markup"], yr["cbam_phase_in"]
+                    ets_price, local_carbon_price, grid_ef, yr["markup"], yr["free_alloc_rate"], supplier_reduction_pct
                 )
                 r["tonnage"] = float(row["Tonaj"])
                 batch_results.append(r)
@@ -472,7 +546,7 @@ with tab2:
             st.dataframe(res_df, use_container_width=True)
 
             tot_sav = res_df["Net Tasarruf (€)"].sum()
-            st.success(f"**Toplam Sevkiyat Tasarrufu:** `{tot_sav:,.2f} €`")
+            st.success(f"**Toplam Sevkiyat Tasarrufu ({yr['year']}):** `{tot_sav:,.2f} €`")
 
             batch_xml = generate_cbam_xml("Toplu İhracat Beyanı", broker_name, yr["year"], batch_results)
             st.download_button(
@@ -486,10 +560,10 @@ with tab2:
             st.error(f"Excel dosyası işlenirken hata oluştu. Lütfen şablon sütun adlarını koruyun. Detay: {e}")
 
 # ==============================================================================
-# SEKME 3: 2026 TÜRKİYE RESMİ KATSAYI REFERANS TABLOSU
+# SEKME 3: 2026 TÜRKİYE RESMİ KATSAYI & BENCHMARK REFERANS TABLOSU
 # ==============================================================================
 with tab3:
-    st.subheader("(EU) 2025/2621 & 2026/1740 Türkiye Özel Kesin Dönem Katsayıları")
+    st.subheader("(EU) 2025/2621, 2026/1740 ve Madde 31 Resmi Türkiye Katsayı Tablosu")
     ref_list = []
     for k, v in GTIP_2026_DB.items():
         ref_list.append({
@@ -498,7 +572,7 @@ with tab3:
             "Sektör": v["sector"],
             "2026 Baz Değer (tCO₂e/t)": v["base_default"],
             "2026 Ceza Artışlı (+%10)": round(v["base_default"] * 1.10, 3),
-            "2027 Ceza Artışlı (+%20)": round(v["base_default"] * 1.20, 3),
+            "AB Benchmark (Madde 31)": v["eu_benchmark"],
             "Mali Yükümlülük Kapsamı": "Sadece Doğrudan (Direct)" if v["scope"] == "direct_only" else "Doğrudan + Dolaylı (Elektrik)"
         })
     st.dataframe(pd.DataFrame(ref_list), use_container_width=True)
