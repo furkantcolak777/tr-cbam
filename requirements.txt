@@ -1,2 +1,7 @@
-﻿streamlit
+streamlit
 fpdf2
+pandas
+openpyxl
+plotly
+pypdf
+Pillow
