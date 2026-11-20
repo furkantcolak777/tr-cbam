@@ -7,31 +7,34 @@ import os
 st.set_page_config(page_title="TR-CBAM | Pre-Audit Uyum Kokpiti", layout="centered")
 
 # --- DETERMINİSTİK EMİSYON VE BENCHMARK VERİ TABANI (AB CBAM & TR ŞEBEKE) ---
-TR_GRID_EF = 0.442  # tCO2 / MWh (Türkiye Ulusal Elektrik Şebekesi Emisyon Faktörü)
-NAT_GAS_EF = 0.00192  # tCO2 / m3 (Doğalgaz Yanma Emisyon Faktörü)
+TR_GRID_EF = 0.442  # tCO2 / MWh (T.C. ETKB Ulusal Elektrik Şebekesi Emisyon Faktörü)
+NAT_GAS_EF = 0.00192  # tCO2 / m3 (IPCC / AB CBAM Doğalgaz Yanma Emisyon Faktörü)
 
 GTIP_BENCHMARKS = {
     "7208 - Sıcak Haddelenmiş Yassı Çelik Ürünler": {"default_ef": 2.15, "precursor_ef": 1.35},
+    "7209 - Soğuk Haddelenmiş Yassı Çelik Ürünler": {"default_ef": 2.38, "precursor_ef": 1.55},
+    "7210 - Galvanizli / Kaplamalı Yassı Çelik Ürünler": {"default_ef": 2.52, "precursor_ef": 1.65},
+    "7214 - İnşaat Demiri ve Sıcak Haddelenmiş Çubuklar": {"default_ef": 1.98, "precursor_ef": 1.20},
+    "7306 - Demir/Çelikten Kaynaklı Boru ve İçi Boş Profiller": {"default_ef": 2.45, "precursor_ef": 1.60},
     "7318 - Demir/Çelik Cıvata, Vida, Somun ve Bağlantı Elemanları": {"default_ef": 2.65, "precursor_ef": 1.85},
+    "7601 - İşlenmemiş Alüminyum (Külçe / Biyet)": {"default_ef": 6.80, "precursor_ef": 4.90},
     "7604 - Alüminyum Çubuk ve Profiller": {"default_ef": 8.40, "precursor_ef": 6.20},
     "7606 - Alüminyum Sac, Levha ve Şeritler": {"default_ef": 8.95, "precursor_ef": 6.50},
+    "7610 - Alüminyum İnşaat Aksamı (Kapı, Pencere, Yapı Elemanları)": {"default_ef": 9.20, "precursor_ef": 6.75},
     "2523 - Portland Çimento ve Klinker": {"default_ef": 0.92, "precursor_ef": 0.00},
+    "3102 - Azotlu Mineral veya Kimyasal Gübreler": {"default_ef": 2.85, "precursor_ef": 1.90},
 }
 
-# --- TÜRKÇE UNICODE FONT YÜKLEYİCİ (WINDOWS & LINUX UYUMLU) ---
+# --- TÜRKÇE UNICODE FONT YÜKLEYİCİ ---
 def setup_unicode_font(pdf):
-    win_arial = "C:/Windows/Fonts/arial.ttf"
-    win_arial_bold = "C:/Windows/Fonts/arialbd.ttf"
-    win_arial_italic = "C:/Windows/Fonts/ariali.ttf"
-    
-    if os.path.exists(win_arial):
-        pdf.add_font("TrFont", "", win_arial)
-        pdf.add_font("TrFont", "B", win_arial_bold if os.path.exists(win_arial_bold) else win_arial)
-        pdf.add_font("TrFont", "I", win_arial_italic if os.path.exists(win_arial_italic) else win_arial)
+    if os.path.exists("DejaVuSans.ttf"):
+        pdf.add_font("TrFont", "", "DejaVuSans.ttf")
+        pdf.add_font("TrFont", "B", "DejaVuSans-Bold.ttf" if os.path.exists("DejaVuSans-Bold.ttf") else "DejaVuSans.ttf")
+        pdf.add_font("TrFont", "I", "DejaVuSans-Oblique.ttf" if os.path.exists("DejaVuSans-Oblique.ttf") else "DejaVuSans.ttf")
         return "TrFont"
     return "Helvetica"
 
-# --- PDF RAPOR ÜRETİCİ ("THE MONEY SCREEN" İLK SAYFADA) ---
+# --- PDF RAPOR ÜRETİCİ (RESMİ DAYANAKLI & ZERO-RETENTION GARANTİLİ) ---
 def generate_pre_audit_pdf(data):
     pdf = FPDF()
     pdf.add_page()
@@ -40,81 +43,81 @@ def generate_pre_audit_pdf(data):
     # Üst Kurumsal Başlık Şeridi
     pdf.set_fill_color(15, 23, 42)
     pdf.set_text_color(255, 255, 255)
-    pdf.set_font(font_name, "B", 14)
+    pdf.set_font(font_name, "B", 13)
     pdf.cell(0, 12, "TR-CBAM PRE-AUDIT & SINIR VERGİSİ ANALİZ RAPORU", ln=True, align="C", fill=True)
     
     pdf.set_text_color(80, 80, 80)
-    pdf.set_font(font_name, "", 9)
+    pdf.set_font(font_name, "", 8.5)
     pdf.cell(0, 7, f"Rapor Tarihi: {datetime.now().strftime('%d.%m.%Y %H:%M')}  |  Referans No: CBAM-{int(datetime.now().timestamp())}", ln=True, align="C")
-    pdf.ln(5)
+    pdf.ln(4)
 
     # 1. Sevkiyat ve Tesis Bilgileri
     pdf.set_text_color(0, 0, 0)
-    pdf.set_font(font_name, "B", 11)
+    pdf.set_font(font_name, "B", 10.5)
     pdf.cell(0, 8, "1. SEVKİYAT VE TESİS BİLGİLERİ", ln=True)
-    pdf.set_font(font_name, "", 10)
+    pdf.set_font(font_name, "", 9.5)
     pdf.cell(0, 6, f"İhracatçı Firma Unvanı: {data['company_name']}", ln=True)
     pdf.cell(0, 6, f"GTİP / Ürün Grubu: {data['gtip']}", ln=True)
     pdf.cell(0, 6, f"AB Sevkiyat Miktarı: {data['tonnage']:,.2f} Ton   |   AB ETS Karbon Fiyatı: {data['ets_price']:.2f} EUR / tCO2", ln=True)
     pdf.cell(0, 6, f"Denetim Kanıt Belgesi: {data['invoice_status']}", ln=True)
-    pdf.ln(6)
+    pdf.ln(5)
 
-    # 2. THE MONEY SCREEN (KOMİTE KURAL #2)
+    # 2. THE MONEY SCREEN
     pdf.set_fill_color(241, 245, 249)
-    pdf.set_font(font_name, "B", 11)
+    pdf.set_font(font_name, "B", 10.5)
     pdf.cell(0, 9, "2. FİNANSAL ETKİ KIYASLAMASI (THE MONEY SCREEN)", ln=True, fill=True)
     pdf.ln(2)
 
-    # Tablo Başlıkları
-    pdf.set_font(font_name, "B", 9.5)
+    pdf.set_font(font_name, "B", 9)
     pdf.cell(95, 8, "Beyan Senaryosu", border=1)
     pdf.cell(45, 8, "Gömülü Emisyon", border=1, align="C")
     pdf.cell(50, 8, "Sınır Vergisi (CBAM)", border=1, align="R", ln=True)
 
-    # Senaryo A
-    pdf.set_font(font_name, "", 9.5)
+    pdf.set_font(font_name, "", 9)
     pdf.cell(95, 8, "Senaryo A: Kanıtsız Beyan (AB Varsayılan Değer)", border=1)
     pdf.cell(45, 8, f"{data['default_total_em']:,.2f} tCO2", border=1, align="C")
     pdf.cell(50, 8, f"{data['tax_scenario_a']:,.2f} EUR", border=1, align="R", ln=True)
 
-    # Senaryo B
     pdf.cell(95, 8, "Senaryo B: Kanıtlı Gerçek Tesis Enerji Verisi", border=1)
     pdf.cell(45, 8, f"{data['actual_total_em']:,.2f} tCO2", border=1, align="C")
     pdf.cell(50, 8, f"{data['tax_scenario_b']:,.2f} EUR", border=1, align="R", ln=True)
 
-    # Net Tasarruf Satırı
-    pdf.set_font(font_name, "B", 10.5)
+    pdf.set_font(font_name, "B", 10)
     pdf.set_fill_color(220, 252, 231)
     pdf.cell(140, 10, "NET SINIR VERGİSİ TASARRUFU (SEVKİYAT BAŞINA)", border=1, fill=True)
     pdf.cell(50, 10, f"+{data['net_savings']:,.2f} EUR", border=1, align="R", ln=True, fill=True)
-    pdf.ln(6)
+    pdf.ln(5)
 
     # 3. Emisyon Dağılımı ve Tedarikçi Baskı Uyarısı
-    pdf.set_font(font_name, "B", 11)
+    pdf.set_font(font_name, "B", 10.5)
     pdf.cell(0, 8, "3. EMİSYON DAĞILIMI VE TEDARİKÇİ UYARISI", ln=True)
-    pdf.set_font(font_name, "", 10)
+    pdf.set_font(font_name, "", 9.5)
     pdf.cell(0, 6, f"• Scope 1 (Doğalgaz Kaynaklı Doğrudan Emisyon): {data['scope1']:,.2f} tCO2", ln=True)
     pdf.cell(0, 6, f"• Scope 2 (Elektrik Kaynaklı Dolaylı Emisyon): {data['scope2']:,.2f} tCO2", ln=True)
     pdf.cell(0, 6, f"• Precursor (Öncül Hammadde Varsayılan Emisyonu): {data['precursor_total']:,.2f} tCO2", ln=True)
     pdf.ln(3)
     
     pdf.set_fill_color(254, 243, 199)
-    pdf.set_font(font_name, "I", 9)
-    pdf.multi_cell(0, 5.5, f"TEDARİKÇİ BASKI NOTU: Hammadde tedarikçiniz gerçek emisyon verisi paylaşmadığı için öncül madde (precursor) kaleminde AB varsayılan katsayısı uygulanmıştır. Tedarikçiden doğrulanmış veri alınması halinde sevkiyat başına ek {data['precursor_penalty']:,.2f} EUR daha sınır vergisi avantajı sağlanabilir.", border=1, fill=True)
-    pdf.ln(8)
+    pdf.set_font(font_name, "I", 8.5)
+    pdf.multi_cell(0, 5, f"TEDARİKÇİ BASKI NOTU: Hammadde tedarikçiniz gerçek emisyon verisi paylaşmadığı için öncül madde (precursor) kaleminde AB varsayılan katsayısı uygulanmıştır. Tedarikçiden doğrulanmış veri alınması halinde sevkiyat başına ek {data['precursor_penalty']:,.2f} EUR daha sınır vergisi avantajı sağlanabilir.", border=1, fill=True)
+    pdf.ln(5)
 
-    # 4. Gümrük Müşaviri / Danışman Kaşe ve Onay Alanı
-    pdf.set_font(font_name, "B", 9.5)
+    # 4. Metodoloji, Resmi Dayanak ve Veri Gizliliği (Komite Talimatı #2 ve #3)
+    pdf.set_font(font_name, "B", 9)
     pdf.cell(0, 6, f"Raporu Düzenleyen Kurum / Gümrük Müşavirliği: {data['broker_name']}", ln=True)
-    pdf.set_font(font_name, "", 8.5)
-    pdf.set_text_color(100, 100, 100)
-    pdf.multi_cell(0, 4.5, "Yasal Uyarı: Bu belge AB (EU) 2023/956 sayılı CBAM Tüzüğü kapsamında ön değerlendirme ve akredite doğrulayıcı (TÜRKAK/AB Verifier) hazırlık dosyası olarak oluşturulmuştur.")
+    pdf.ln(2)
+    pdf.set_font(font_name, "", 7.8)
+    pdf.set_text_color(70, 70, 70)
+    pdf.multi_cell(0, 4.2, "Metodoloji ve Resmi Kaynak: Hesaplamalarda T.C. Enerji ve Tabii Kaynaklar Bakanlığı Ulusal Elektrik Şebekesi Emisyon Faktörü (0,442 tCO2/MWh), IPCC Doğalgaz Yanma Katsayısı (0,00192 tCO2/m³) ve Avrupa Parlamentosu ile Konseyi'nin (EU) 2023/956 sayılı CBAM Tüzüğü (Annex IV) varsayılan benchmark değerleri esas alınmıştır.")
+    pdf.ln(1.5)
+    pdf.multi_cell(0, 4.2, "Veri Gizliliği (Zero-Retention Garantisi): Girilen tesis, fatura ve sevkiyat verileri sunucularda kalıcı olarak depolanmaz; anlık olarak işlenir ve oturum kapandığında bellekten otomatik olarak silinir.")
 
     return bytes(pdf.output())
 
-# --- ARAYÜZ (TEK SAYFA, TEK AKIŞ - NO AUTH) ---
+# --- ARAYÜZ ---
 st.title("TR-CBAM | Pre-Audit & Sınır Vergisi Kokpiti")
 st.caption("Gümrük Müşavirleri ve İhracatçılar İçin 60 Saniyede Kanıtlı CBAM Maliyet Simülasyonu")
+st.info("🔒 **Zero-Retention Veri Güvenliği:** Girilen ticari ve enerji verileri veritabanında saklanmaz; oturum sonunda bellekten silinir.")
 
 with st.form("cbam_form"):
     col1, col2 = st.columns(2)
