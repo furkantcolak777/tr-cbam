@@ -200,7 +200,18 @@ def inject_design_system(theme_name: str, font_name: str):
             color: var(--text-primary) !important;
         }}
 
-        /* Form Input, Selectbox, Dosya Yükleyici ve Tüm Buton Kontrast Güvencesi */
+        /* Üst Başlık & Tema Kontrol Barını Sayfa Kaydırıldığında Sabit Tut (Sticky) */
+        div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"]:first-of-type {{
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 999 !important;
+            background-color: var(--bg-canvas) !important;
+            padding: 8px 0px 10px 0px !important;
+            border-bottom: 1px solid var(--border) !important;
+            margin-bottom: 6px !important;
+        }}
+
+        /* Form Input, Selectbox ve Açılır Liste Kontrast Güvencesi */
         input, textarea, select,
         [data-baseweb="select"] > div,
         [data-baseweb="input"] > div,
@@ -215,6 +226,16 @@ def inject_design_system(theme_name: str, font_name: str):
         input::placeholder {{
             color: var(--text-primary) !important;
             -webkit-text-fill-color: var(--text-primary) !important;
+        }}
+        [data-baseweb="popover"],
+        [data-baseweb="popover"] ul,
+        [role="listbox"],
+        [role="option"] {{
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+        }}
+        [role="option"]:hover {{
+            background-color: var(--bg-canvas) !important;
         }}
 
         /* Dosya Yükleme Alanı (st.file_uploader) */
@@ -258,18 +279,22 @@ def inject_design_system(theme_name: str, font_name: str):
             color: var(--accent) !important;
         }}
 
-        /* Expander Başlığı ve İçeriği */
-        [data-testid="stExpander"] {{
+        /* Expander Başlığı ve İçeriği (Koyu Arka Plan Sızıntısını Engeller) */
+        [data-testid="stExpander"],
+        [data-testid="stExpander"] details,
+        [data-testid="stExpander"] summary {{
             background-color: var(--bg-card) !important;
-            border: 1px solid var(--border) !important;
+            border-color: var(--border) !important;
+            color: var(--text-primary) !important;
             border-radius: 8px !important;
         }}
-        [data-testid="stExpander"] summary,
-        [data-testid="stExpander"] summary * {{
+        [data-testid="stExpander"] summary *,
+        [data-testid="stExpander"] summary svg {{
             color: var(--text-primary) !important;
+            fill: var(--text-primary) !important;
         }}
 
-        /* Kompakt, Tek Satırlık, Sayfayla Kayan Üst Başlık Şeridi */
+        /* Kompakt, Tek Satırlık Üst Başlık Şeridi */
         .compact-topbar {{
             background-color: var(--bg-card);
             border: 1px solid var(--border);
@@ -315,16 +340,18 @@ def inject_design_system(theme_name: str, font_name: str):
             white-space: nowrap;
         }}
 
-        /* Yatay Sekme Navigasyonu */
+        /* Yatay Sekme Navigasyonu (Pasif Sekmelerin Beyaz Kalmasını Önler) */
         .stTabs [data-baseweb="tab-list"] {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 3px 8px;
-            gap: 6px;
-            margin-top: 6px;
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            padding: 3px 8px !important;
+            gap: 6px !important;
+            margin-top: 4px !important;
         }}
-        .stTabs [data-baseweb="tab"] {{
+        .stTabs [data-baseweb="tab"],
+        .stTabs [data-baseweb="tab"] p,
+        .stTabs [data-baseweb="tab"] span {{
             background-color: transparent !important;
             color: var(--text-secondary) !important;
             font-weight: 600 !important;
@@ -333,7 +360,9 @@ def inject_design_system(theme_name: str, font_name: str):
             border-bottom: 2px solid transparent !important;
             border-radius: 0px !important;
         }}
-        .stTabs [aria-selected="true"] {{
+        .stTabs [aria-selected="true"],
+        .stTabs [aria-selected="true"] p,
+        .stTabs [aria-selected="true"] span {{
             color: var(--accent) !important;
             border-bottom: 2px solid var(--accent) !important;
         }}
@@ -1139,7 +1168,7 @@ if "last_audit_findings" not in st.session_state:
 
 vd = st.session_state["vault_data"]
 
-# --- TEK SATIRLIK KOMPAKT ÜST BAŞLIK & KONTROL ŞERİDİ (SAYFAYLA KAYAR) ---
+# --- TEK SATIRLIK SABİT (STICKY) ÜST BAŞLIK & KONTROL ŞERİDİ ---
 bar_left, bar_c1, bar_c2, bar_c3, bar_c4 = st.columns([2.35, 1.05, 0.90, 0.55, 0.85], gap="small")
 
 with bar_c1:
