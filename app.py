@@ -181,20 +181,20 @@ def inject_design_system(theme_name: str, font_name: str):
         .stDeployButton, [data-testid="stToolbar"], [data-testid="collapsedControl"] {{ display: none !important; }}
         section[data-testid="stSidebar"] {{ display: none !important; }}
 
-        /* Ana Sayfa ve Üst Boşluk (Sabit üst şerit için 76px boşluk bırakır) */
-        .stApp, [data-testid="stAppViewContainer"], .main {{
+        /* Ana Sayfa Arka Planı ve Sabit Üst Bar Boşluğu */
+        .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
             background-color: {t['bg_canvas']} !important;
             color: {t['text_primary']} !important;
-            font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif !important;
         }}
         .block-container {{
-            padding-top: 76px !important;
+            padding-top: 84px !important;
             padding-bottom: 2.5rem !important;
             max-width: 1460px;
         }}
 
-        /* ÜST ŞERİDİ EKRANIN TEPESİNE SABİTLE (FIXED HEADER) */
-        div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"]:first-of-type {{
+        /* ÜST ŞERİDİ EKRANIN TEPESİNE ÇİVİLE (FIXED TOPBAR) */
+        [data-testid="stMainBlockContainer"] > div > div > div[data-testid="stHorizontalBlock"]:first-of-type,
+        section.main .block-container > div > div > div[data-testid="stHorizontalBlock"]:first-of-type {{
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
@@ -203,23 +203,31 @@ def inject_design_system(theme_name: str, font_name: str):
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
             border-bottom: 2px solid {t['border']} !important;
-            padding: 10px 2rem !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+            padding: 10px 2.2rem !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
             align-items: center !important;
         }}
 
-        /* TÜM METİN ETİKETLERİNİ ZORLA (Aydınlık temada beyaz kalan yazıları kesin çözer) */
-        .stApp p, .stApp span, .stApp label, .stApp div,
+        /* YAZI TİPİ VE RENK GÜVENCESİ (Material Icons/Symbols hariç tutulur!) */
+        .stApp p, .stApp label, .stApp input, .stApp textarea, .stApp select,
         .stApp h1, .stApp h2, .stApp h3, .stApp h4,
-        [data-testid="stMarkdownContainer"] *,
-        [data-testid="stWidgetLabel"] *,
-        [data-baseweb="radio"] *,
-        [data-baseweb="checkbox"] * {{
+        [data-testid="stMarkdownContainer"] p,
+        [data-testid="stMarkdownContainer"] span,
+        [data-testid="stMarkdownContainer"] strong,
+        [data-testid="stWidgetLabel"] p,
+        [data-baseweb="radio"] label div,
+        [data-baseweb="checkbox"] label div {{
             color: {t['text_primary']} !important;
-            font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif !important;
         }}
 
-        /* Form Input, Selectbox ve Açılır Liste Kontrastı */
+        /* İkon Fontlarını Koru (expand_more, arrow_right, upload bozulmasını önler) */
+        [data-testid="stIconMaterial"], .material-symbols-rounded, .material-icons {{
+            font-family: 'Material Symbols Rounded', 'Material Icons' !important;
+            color: {t['text_primary']} !important;
+        }}
+
+        /* Form Input, Selectbox ve Açılır Liste */
         input, textarea, select,
         [data-baseweb="select"] > div,
         [data-baseweb="input"] > div,
@@ -234,12 +242,8 @@ def inject_design_system(theme_name: str, font_name: str):
         input::placeholder {{
             color: {t['text_primary']} !important;
             -webkit-text-fill-color: {t['text_primary']} !important;
+            font-family: '{font_name}', sans-serif !important;
         }}
-        [data-baseweb="select"] svg {{
-            fill: {t['text_primary']} !important;
-        }}
-
-        /* Açılır Dropdown ve Popover Pencereleri (Body altında açılan portallar) */
         div[data-baseweb="popover"],
         div[data-baseweb="popover"] > div,
         ul[role="listbox"],
@@ -254,13 +258,17 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['accent']} !important;
         }}
 
-        /* Dosya Yükleme Alanı (st.file_uploader) */
+        /* Dosya Yükleme Alanı */
         [data-testid="stFileUploader"] section,
         [data-testid="stFileUploaderDropzone"] {{
             background-color: {t['bg_canvas']} !important;
             border: 1px dashed {t['border']} !important;
-            color: {t['text_primary']} !important;
             border-radius: 8px !important;
+        }}
+        [data-testid="stFileUploaderDropzoneInstructions"] span,
+        [data-testid="stFileUploaderDropzoneInstructions"] small {{
+            color: {t['text_primary']} !important;
+            font-family: '{font_name}', sans-serif !important;
         }}
         [data-testid="stFileUploader"] button {{
             background-color: {t['bg_card']} !important;
@@ -268,7 +276,7 @@ def inject_design_system(theme_name: str, font_name: str):
             border: 1px solid {t['border']} !important;
         }}
 
-        /* İkincil Butonlar, İndirme Butonları, Popover ve Sayı +/- Butonları */
+        /* İkincil Butonlar, İndirme Butonları, Popover ve +/- Butonları */
         .stButton > button[kind="secondary"],
         .stDownloadButton > button,
         [data-testid="stPopover"] > button,
@@ -279,10 +287,14 @@ def inject_design_system(theme_name: str, font_name: str):
             border-radius: 6px !important;
             font-weight: 600 !important;
         }}
+        .stDownloadButton > button p,
+        [data-testid="stPopover"] > button p {{
+            color: {t['text_primary']} !important;
+            font-family: '{font_name}', sans-serif !important;
+        }}
         .stDownloadButton > button:hover,
         [data-testid="stPopover"] > button:hover {{
             border-color: {t['accent']} !important;
-            color: {t['accent']} !important;
         }}
 
         /* Expander Başlığı ve İçeriği */
@@ -291,14 +303,15 @@ def inject_design_system(theme_name: str, font_name: str):
         [data-testid="stExpander"] summary {{
             background-color: {t['bg_card']} !important;
             border: 1px solid {t['border']} !important;
-            color: {t['text_primary']} !important;
             border-radius: 8px !important;
         }}
-        [data-testid="stExpander"] summary svg {{
-            fill: {t['text_primary']} !important;
+        [data-testid="stExpander"] summary p {{
+            color: {t['text_primary']} !important;
+            font-family: '{font_name}', sans-serif !important;
+            font-weight: 600 !important;
         }}
 
-        /* Kompakt, Tek Satırlık Üst Başlık Şeridi */
+        /* Kompakt Üst Başlık Kutusu */
         .compact-topbar {{
             background-color: {t['bg_card']};
             border: 1px solid {t['border']};
@@ -322,7 +335,6 @@ def inject_design_system(theme_name: str, font_name: str):
             font-weight: 700;
             font-size: 1.02rem;
             color: {t['text_primary']} !important;
-            letter-spacing: 0.02em;
         }}
         .topbar-sep {{
             color: {t['text_secondary']} !important;
@@ -341,10 +353,9 @@ def inject_design_system(theme_name: str, font_name: str):
             padding: 2px 10px;
             font-size: 0.72rem;
             font-weight: 600;
-            white-space: nowrap;
         }}
 
-        /* Yatay Sekme Navigasyonu (6 Sekme) */
+        /* Yatay Sekme Navigasyonu (Çift çizgiyi kaldırır, tek çizgi bırakır) */
         .stTabs [data-baseweb="tab-list"] {{
             background-color: {t['bg_card']} !important;
             border: 1px solid {t['border']} !important;
@@ -353,25 +364,28 @@ def inject_design_system(theme_name: str, font_name: str):
             gap: 6px !important;
             margin-top: 6px !important;
         }}
+        .stTabs [data-baseweb="tab-highlight"] {{
+            background-color: {t['accent']} !important;
+            height: 3px !important;
+        }}
+        .stTabs [data-baseweb="tab-border"] {{
+            display: none !important;
+        }}
         .stTabs [data-baseweb="tab"],
-        .stTabs [data-baseweb="tab"] p,
-        .stTabs [data-baseweb="tab"] span {{
+        .stTabs [data-baseweb="tab"] p {{
             background-color: transparent !important;
             color: {t['text_secondary']} !important;
             font-weight: 600 !important;
             font-size: 0.85rem !important;
             padding: 8px 12px !important;
-            border-bottom: 2px solid transparent !important;
-            border-radius: 0px !important;
+            border: none !important;
         }}
         .stTabs [aria-selected="true"],
-        .stTabs [aria-selected="true"] p,
-        .stTabs [aria-selected="true"] span {{
+        .stTabs [aria-selected="true"] p {{
             color: {t['accent']} !important;
-            border-bottom: 3px solid {t['accent']} !important;
         }}
 
-        /* Modüler KPI ve İçerik Kartları */
+        /* Modüler KPI Kartları */
         .data-card {{
             background-color: {t['bg_card']};
             border: 1px solid {t['border']};
@@ -425,19 +439,16 @@ def inject_design_system(theme_name: str, font_name: str):
             margin-top: 7px;
         }}
 
-        /* Birincil Aksiyon Butonları (Beyaz Yazı Korumalı) */
+        /* Birincil Butonlar */
         .stButton > button[kind="primary"],
         .stFormSubmitButton > button,
-        .stButton > button[kind="primary"] *,
-        .stFormSubmitButton > button * {{
+        .stButton > button[kind="primary"] p,
+        .stFormSubmitButton > button p {{
             background-color: {t['accent']} !important;
             color: {t['accent_text']} !important;
             border: none !important;
             font-weight: 600 !important;
             border-radius: 6px !important;
-        }}
-        .stFormSubmitButton > button {{
-            padding: 0.55rem 1rem !important;
         }}
     </style>
     """, unsafe_allow_html=True)
@@ -1248,7 +1259,6 @@ with tab1:
     col_left, col_right = st.columns([1.08, 1.82], gap="large")
 
     with col_left:
-        st.markdown('<div class="data-card">', unsafe_allow_html=True)
         ui_mode = st.radio(
             "Çalışma Modu",
             ["⚡ Hızlı Analiz Modu (4 Temel Veri)", "🔬 Detaylı Mühendislik Modu"],
@@ -1373,7 +1383,6 @@ with tab1:
                         st.success(f"Kasa yüklendi: {vd['company_name']}")
                     except Exception:
                         st.error("Parola hatalı veya kasa dosyası bozuk.")
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # Başlangıç ve Güncel Hesaplama Durumu
     if not run_btn and "cached_run" not in st.session_state:
@@ -1474,7 +1483,6 @@ with tab1:
         # ORTA SATIR: %65 PLOTLY MALİYET KIYASLAMA + %35 TÜV/SGS UYUM ENDEKSİ
         mid_left, mid_right = st.columns([1.85, 1.0])
         with mid_left:
-            st.markdown('<div class="data-card">', unsafe_allow_html=True)
             fig = go.Figure(data=[
                 go.Bar(
                     x=["Kanıtsız Default Ceza (A)", "Tesis Gerçek Yükü (B)"],
@@ -1508,7 +1516,6 @@ with tab1:
                 )
             )
             st.plotly_chart(fig, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         with mid_right:
             score_color = active_theme["success"] if score >= 80 else (active_theme["accent"] if score >= 60 else active_theme["danger"])
@@ -1563,7 +1570,6 @@ with tab1:
 # SEKME 2: GÜMRÜK MÜŞAVİRİ REFERRAL
 # ==============================================================================
 with tab2:
-    st.markdown('<div class="data-card">', unsafe_allow_html=True)
     st.subheader("📨 Gümrük Müşaviri Sıfır-Sorumluluk Müşteri Yönlendirme (Referral)")
     st.caption("Gümrük müşavirliklerinin müteselsil sorumluluk veya teknik danışmanlık yükü almadan ihracatçı müşterilerine 2026 SKDM Risk Özeti iletmesini sağlar.")
 
@@ -1594,13 +1600,11 @@ TR-CBAM platformu üzerinden dönemlik elektrik ve doğalgaz tüketiminizi girer
 Saygılarımızla,
 {broker_name}"""
         st.text_area("Müşteriye Gönderilecek Hazır Bilgilendirme Metni", value=invite_msg, height=215)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
 # SEKME 3: ERP VERİ AKTARIMI
 # ==============================================================================
 with tab3:
-    st.markdown('<div class="data-card">', unsafe_allow_html=True)
     st.subheader("🔌 Logo Tiger / Mikro / Netsis / SAP Hızlı Veri Aktarım Modülü")
     erp_type = st.selectbox("Kaynak ERP / Muhasebe Sistemi", ["Logo Tiger / Go3", "Mikro Yazılım", "Netsis", "SAP S/4HANA (MM/PP)", "Diğer Özel Excel / CSV"])
     erp_file = st.file_uploader(f"{erp_type} Dışa Aktarım Dosyasını Yükle (.xlsx / .csv)", type=["xlsx", "csv"])
@@ -1625,13 +1629,11 @@ with tab3:
                 st.success(f"{erp_type} verileri başarıyla toplandı ve 1. Sekmeye aktarıldı!")
         except Exception as e:
             st.error(f"ERP dosyası okunamadı: {e}")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
 # SEKME 4: TEDARİKÇİ (PRECURSOR) PORTALI
 # ==============================================================================
 with tab4:
-    st.markdown('<div class="data-card">', unsafe_allow_html=True)
     st.subheader("🤝 Tedarikçi Emisyon Veri Portalı (Precursor Network Effect)")
     t_col1, t_col2 = st.columns(2, gap="large")
     with t_col1:
@@ -1668,13 +1670,11 @@ Saygılarımızla,
             st.session_state["vault_data"]["prec_mi"] = in_sup_mi
             st.session_state["vault_data"]["prec_verified"] = in_sup_ver
             st.success("Tedarikçi verisi ana hesaplama sekmesine aktarıldı!")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
 # SEKME 5: ÇOKLU SEVKİYAT & 50 TON EŞİĞİ
 # ==============================================================================
 with tab5:
-    st.markdown('<div class="data-card">', unsafe_allow_html=True)
     st.subheader("📊 Çoklu Sevkiyat Analizi & (EU) 2025/2083 Madde 2a Kümülatif 50 Ton Kontrolü")
     sample_df = pd.DataFrame([
         {"Urun_Adi": "Sıcak Haddelenmiş Sac", "CN_Kodu": "72085120", "Rota": "(E)", "Tesis_Uretim_Ton": 1000.0, "AB_Sevkiyat_Ton": 30.0, "Dogalgaz_m3": 18000.0, "Elektrik_kWh": 150000.0, "Oncul_CN": "72071114", "Oncul_mi": 1.05},
@@ -1744,13 +1744,11 @@ with tab5:
             st.download_button("🧾 Toplu Beyan İçin O3CI v3.2 XML İndir", data=b_xml, file_name=f"EU_CBAM_Batch_O3CI_{yr_rule['year']}.xml", mime="application/xml", use_container_width=True)
         except Exception as e:
             st.error(f"Excel işleme hatası: {e}")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
 # SEKME 6: RESMİ KATALOG (570 CN KODU)
 # ==============================================================================
 with tab6:
-    st.markdown('<div class="data-card">', unsafe_allow_html=True)
     st.subheader("📚 Avrupa Komisyonu Resmi 2026 Kesin Dönem Türkiye & Benchmark Kataloğu (570 CN Kodu)")
     cat_rows = []
     for cn_8, v in CATALOG.items():
@@ -1765,4 +1763,3 @@ with tab6:
             "Column B Benchmark (Tam Zincir)": ", ".join([f"{x[0]} {x[1]}".strip() for x in v["b"]]),
         })
     st.dataframe(pd.DataFrame(cat_rows), use_container_width=True, height=550)
-    st.markdown('</div>', unsafe_allow_html=True)
