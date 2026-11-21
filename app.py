@@ -183,71 +183,64 @@ def inject_design_system(theme_name: str, font_name: str):
 
         /* Ana Sayfa Arka Planı */
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {{
+            background-color: {t['bg_canvas']} !important;
+            color: {t['text_primary']} !important;
             overflow: visible !important;
         }}
-        }}
         .block-container {{
-            padding-top: 12px !important;
+            padding-top: 118px !important;
             padding-bottom: 2.5rem !important;
             max-width: 1460px;
         }}
 
-        /* İlk stVerticalBlockBorderWrapper (Sabit Üst Kabuk) */
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) {{
-            position: sticky !important;
-            top: 0px !important;
+        /* SABİT ÜST KABUK (.st-key-fixed_header_shell) */
+        .st-key-fixed_header_shell {{
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
-            border: 1px solid {t['border']} !important;
             border-bottom: 2px solid {t['accent']} !important;
-            border-radius: 0px 0px 10px 10px !important;
-            padding: 8px 14px 4px 14px !important;
-            margin-top: -8px !important;
-            margin-bottom: 14px !important;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14) !important;
+            padding: 8px 2.2rem 4px 2.2rem !important;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14) !important;
         }}
 
-        /* Yatay Sekme Navigasyonu (st.radio -> sekme görünümü) */
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) [data-testid="stRadio"] > div {{
+        /* YATAY SEKME NAVİGASYONU (st.radio -> sekme görünümü) */
+        .st-key-fixed_header_shell [data-testid="stRadio"] > div {{
             flex-direction: row !important;
             flex-wrap: wrap !important;
             gap: 4px !important;
             background-color: {t['bg_card']} !important;
             border: 1px solid {t['border']} !important;
             border-radius: 8px !important;
-            padding: 4px 8px !important;
-            margin-top: 6px !important;
+            padding: 3px 8px !important;
+            margin-top: 4px !important;
         }}
-        /* Radio yuvarlak noktalarını gizle */
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) [data-testid="stRadio"] label > div:first-child,
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) [data-testid="stRadio"] input[type="radio"] {{
+        /* Radio yuvarlak noktalarını tamamen gizle */
+        .st-key-fixed_header_shell [data-testid="stRadio"] label > div:first-child,
+        .st-key-fixed_header_shell [data-testid="stRadio"] input[type="radio"] {{
             display: none !important;
         }}
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) [data-testid="stRadio"] label {{
-            padding: 7px 14px !important;
+        .st-key-fixed_header_shell [data-testid="stRadio"] label {{
+            padding: 6px 14px !important;
             margin: 0 !important;
             border-radius: 6px !important;
             border-bottom: 3px solid transparent !important;
             cursor: pointer !important;
         }}
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) [data-testid="stRadio"] label p {{
+        .st-key-fixed_header_shell [data-testid="stRadio"] label p {{
             color: {t['text_secondary']} !important;
             font-weight: 600 !important;
             font-size: 0.85rem !important;
         }}
         /* Seçili Sekme */
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) [data-testid="stRadio"] label:has(input:checked) {{
+        .st-key-fixed_header_shell [data-testid="stRadio"] label:has(input:checked) {{
             background-color: {t['bg_canvas']} !important;
             border-bottom: 3px solid {t['accent']} !important;
         }}
-        div[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stRadio"]) [data-testid="stRadio"] label:has(input:checked) p {{
-            color: {t['accent']} !important;
-        }}
-        /* Seçili Sekme Alt Çizgisi */
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] label:has(input:checked) {{
-            border-bottom: 3px solid {t['accent']} !important;
-        }}
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] label:has(input:checked) p {{
+        .st-key-fixed_header_shell [data-testid="stRadio"] label:has(input:checked) p {{
             color: {t['accent']} !important;
         }}
         /* YAZI TİPİ VE RENK GÜVENCESİ (İkon span'larına dokunmaz, expand_more hatasını bitirir!) */
@@ -1231,7 +1224,7 @@ verifier_id = "PENDING-VERIFIER-2026"
 vault_pass = ""
 
 # --- SABİT ÜST KABUK (BAŞLIK + KONTROLLER + 6 SEKME TEK PARÇA) ---
-with st.container(border=True):
+with st.container(key="fixed_header_shell"):
     bar_left, bar_c1, bar_c3, bar_c4 = st.columns([3.10, 0.82, 0.58, 0.95], gap="small")
 
     with bar_c1:
