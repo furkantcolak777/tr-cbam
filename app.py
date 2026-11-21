@@ -31,212 +31,338 @@ except Exception:
 st.set_page_config(
     page_title="TR-CBAM | AB Sınırda Karbon (SKDM) Ceza Kalkanı",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# --- 10 HAZIR GÖZ YORMAYAN KURUMSAL TEMA PALETİ ---
-THEMES = {
-    "6. Gece Arduvazı (Midnight Slate — Varsayılan)": {
-        "is_dark": True, "bg_main": "#0B1120", "bg_card": "#131C31", "bg_sidebar": "#080D1A",
-        "text_primary": "#F1F5F9", "text_secondary": "#94A3B8", "sidebar_text": "#F1F5F9",
-        "accent": "#3B82F6", "danger": "#F87171", "success": "#34D399"
+# --- 10 HAZIR KURUMSAL RENK PALETİ (SAP FIORI QUARTZ / HORIZON & DARK SLATE) ---
+FIORI_THEMES = {
+    "1. SAP Fiori Quartz (Varsayılan Kurumsal)": {
+        "is_dark": False,
+        "shell_bg": "#354A5F", "shell_text": "#FFFFFF",
+        "bg_canvas": "#F5F6F7", "bg_card": "#FFFFFF",
+        "text_primary": "#1D2D3E", "text_secondary": "#556B82",
+        "accent": "#0A6ED1", "accent_text": "#FFFFFF",
+        "danger": "#BB0000", "danger_bg": "rgba(187, 0, 0, 0.08)",
+        "success": "#107E3E", "success_bg": "rgba(16, 126, 62, 0.09)",
+        "border": "#D9E0E6"
     },
-    "1. Kurumsal Arduvaz & Alabaster (FinTech Light)": {
-        "is_dark": False, "bg_main": "#F4F6F9", "bg_card": "#FFFFFF", "bg_sidebar": "#0F172A",
-        "text_primary": "#0F172A", "text_secondary": "#475569", "sidebar_text": "#F8FAFC",
-        "accent": "#1E3A8A", "danger": "#DC2626", "success": "#059669"
+    "2. SAP Horizon Morning": {
+        "is_dark": False,
+        "shell_bg": "#1A2733", "shell_text": "#FFFFFF",
+        "bg_canvas": "#EFF3F7", "bg_card": "#FFFFFF",
+        "text_primary": "#131E29", "text_secondary": "#5B738B",
+        "accent": "#0070F2", "accent_text": "#FFFFFF",
+        "danger": "#D20A0A", "danger_bg": "rgba(210, 10, 10, 0.08)",
+        "success": "#188918", "success_bg": "rgba(24, 137, 24, 0.09)",
+        "border": "#D5DFE8"
     },
-    "2. Sıcak Kireçtaşı & Kömür (Warm Limestone)": {
-        "is_dark": False, "bg_main": "#F7F5F0", "bg_card": "#FCFBF9", "bg_sidebar": "#EFECE6",
-        "text_primary": "#1C1917", "text_secondary": "#57534E", "sidebar_text": "#1C1917",
-        "accent": "#292524", "danger": "#C2410C", "success": "#15803D"
+    "3. Sıcak Kireçtaşı (Warm Limestone)": {
+        "is_dark": False,
+        "shell_bg": "#292524", "shell_text": "#FAF8F5",
+        "bg_canvas": "#F7F5F0", "bg_card": "#FCFBF9",
+        "text_primary": "#1C1917", "text_secondary": "#57534E",
+        "accent": "#B45309", "accent_text": "#FFFFFF",
+        "danger": "#C2410C", "danger_bg": "rgba(194, 65, 12, 0.08)",
+        "success": "#15803D", "success_bg": "rgba(21, 128, 61, 0.09)",
+        "border": "#E7E2D8"
     },
-    "3. Kuzey Buzulu & Kobalt (Nordic Mist)": {
-        "is_dark": False, "bg_main": "#EFF3F8", "bg_card": "#F9FBFD", "bg_sidebar": "#E2E8F0",
-        "text_primary": "#1E293B", "text_secondary": "#64748B", "sidebar_text": "#1E293B",
-        "accent": "#0369A1", "danger": "#E11D48", "success": "#0D9488"
+    "4. İsviçre Bankacılığı (Swiss Vault)": {
+        "is_dark": False,
+        "shell_bg": "#111827", "shell_text": "#F9FAFB",
+        "bg_canvas": "#F3F4F6", "bg_card": "#FFFFFF",
+        "text_primary": "#111827", "text_secondary": "#4B5563",
+        "accent": "#1F2937", "accent_text": "#FFFFFF",
+        "danger": "#DC2626", "danger_bg": "rgba(220, 38, 38, 0.08)",
+        "success": "#047857", "success_bg": "rgba(4, 120, 87, 0.09)",
+        "border": "#D1D5DB"
     },
-    "4. Yeşil Finans & Adaçayı (ESG Sage)": {
-        "is_dark": False, "bg_main": "#F2F5F3", "bg_card": "#FAFDFB", "bg_sidebar": "#132A22",
-        "text_primary": "#142921", "text_secondary": "#4B6358", "sidebar_text": "#ECFDF5",
-        "accent": "#1B4332", "danger": "#B91C1C", "success": "#16A34A"
+    "5. Yeşil Finans (ESG Sage)": {
+        "is_dark": False,
+        "shell_bg": "#132A22", "shell_text": "#ECFDF5",
+        "bg_canvas": "#F2F5F3", "bg_card": "#FAFDFB",
+        "text_primary": "#142921", "text_secondary": "#4B6358",
+        "accent": "#1B4332", "accent_text": "#FFFFFF",
+        "danger": "#B91C1C", "danger_bg": "rgba(185, 28, 28, 0.08)",
+        "success": "#16A34A", "success_bg": "rgba(22, 163, 74, 0.09)",
+        "border": "#D4E0D9"
     },
-    "5. İsviçre Bankacılığı & Gümüş (Swiss Vault)": {
-        "is_dark": False, "bg_main": "#F3F4F6", "bg_card": "#FFFFFF", "bg_sidebar": "#E5E7EB",
-        "text_primary": "#111827", "text_secondary": "#4B5563", "sidebar_text": "#111827",
-        "accent": "#1F2937", "danger": "#DC2626", "success": "#047857"
+    "6. Gece Arduvazı (Midnight Slate Dark)": {
+        "is_dark": True,
+        "shell_bg": "#080D1A", "shell_text": "#F1F5F9",
+        "bg_canvas": "#0B1120", "bg_card": "#131C31",
+        "text_primary": "#F1F5F9", "text_secondary": "#94A3B8",
+        "accent": "#3B82F6", "accent_text": "#FFFFFF",
+        "danger": "#F87171", "danger_bg": "rgba(248, 113, 113, 0.12)",
+        "success": "#34D399", "success_bg": "rgba(52, 211, 153, 0.12)",
+        "border": "#24314D"
     },
-    "7. Endüstriyel Karbon & Çelik (Graphite Steel)": {
-        "is_dark": True, "bg_main": "#121316", "bg_card": "#1A1C20", "bg_sidebar": "#0D0E10",
-        "text_primary": "#E4E4E7", "text_secondary": "#A1A1AA", "sidebar_text": "#E4E4E7",
-        "accent": "#60A5FA", "danger": "#EF4444", "success": "#10B981"
+    "7. SAP Fiori Evening (Dark Horizon)": {
+        "is_dark": True,
+        "shell_bg": "#12171C", "shell_text": "#EAECEE",
+        "bg_canvas": "#1C2228", "bg_card": "#232A31",
+        "text_primary": "#EAECEE", "text_secondary": "#89919A",
+        "accent": "#4DB1FF", "accent_text": "#0B1929",
+        "danger": "#FF8888", "danger_bg": "rgba(255, 136, 136, 0.12)",
+        "success": "#5DC122", "success_bg": "rgba(93, 193, 34, 0.12)",
+        "border": "#323C46"
     },
-    "8. Derin Okyanus & Prusya Mavisi (Deep Prussian)": {
-        "is_dark": True, "bg_main": "#0A1622", "bg_card": "#112233", "bg_sidebar": "#071019",
-        "text_primary": "#E2E8F0", "text_secondary": "#8FA3B8", "sidebar_text": "#E2E8F0",
-        "accent": "#38BDF8", "danger": "#FB7185", "success": "#2DD4BF"
+    "8. Endüstriyel Karbon (Graphite Steel)": {
+        "is_dark": True,
+        "shell_bg": "#0D0E10", "shell_text": "#E4E4E7",
+        "bg_canvas": "#121316", "bg_card": "#1A1C20",
+        "text_primary": "#E4E4E7", "text_secondary": "#A1A1AA",
+        "accent": "#60A5FA", "accent_text": "#091322",
+        "danger": "#EF4444", "danger_bg": "rgba(239, 68, 68, 0.12)",
+        "success": "#10B981", "success_bg": "rgba(16, 185, 129, 0.12)",
+        "border": "#2A2E35"
     },
-    "9. Obsidyen & Kehribar (Obsidian Amber)": {
-        "is_dark": True, "bg_main": "#141210", "bg_card": "#1E1B18", "bg_sidebar": "#0E0D0B",
-        "text_primary": "#F5F5F4", "text_secondary": "#A8A29E", "sidebar_text": "#F5F5F4",
-        "accent": "#D97706", "danger": "#F87171", "success": "#4ADE80"
+    "9. Derin Prusya Mavisi (Deep Prussian)": {
+        "is_dark": True,
+        "shell_bg": "#071019", "shell_text": "#E2E8F0",
+        "bg_canvas": "#0A1622", "bg_card": "#112233",
+        "text_primary": "#E2E8F0", "text_secondary": "#8FA3B8",
+        "accent": "#38BDF8", "accent_text": "#061826",
+        "danger": "#FB7185", "danger_bg": "rgba(251, 113, 133, 0.12)",
+        "success": "#2DD4BF", "success_bg": "rgba(45, 212, 191, 0.12)",
+        "border": "#1E3852"
     },
-    "10. Kuzey Ormanı Gecesi (Nordic Pine Dark)": {
-        "is_dark": True, "bg_main": "#0E1715", "bg_card": "#16221F", "bg_sidebar": "#0A110F",
-        "text_primary": "#ECFDF5", "text_secondary": "#9CA3AF", "sidebar_text": "#ECFDF5",
-        "accent": "#10B981", "danger": "#F87171", "success": "#34D399"
+    "10. Obsidyen & Kehribar (Private Banking Dark)": {
+        "is_dark": True,
+        "shell_bg": "#0E0D0B", "shell_text": "#F5F5F4",
+        "bg_canvas": "#141210", "bg_card": "#1E1B18",
+        "text_primary": "#F5F5F4", "text_secondary": "#A8A29E",
+        "accent": "#D97706", "accent_text": "#FFFFFF",
+        "danger": "#F87171", "danger_bg": "rgba(248, 113, 113, 0.12)",
+        "success": "#4ADE80", "success_bg": "rgba(74, 222, 128, 0.12)",
+        "border": "#332E29"
     },
 }
 
-def apply_corporate_theme(theme: dict):
+# --- 10 KURUMSAL GOOGLE FONTS YAZI TİPİ ---
+FIORI_FONTS = {
+    "IBM Plex Sans": "IBM+Plex+Sans:wght@400;500;600;700",
+    "Plus Jakarta Sans": "Plus+Jakarta+Sans:wght@400;500;600;700",
+    "Inter": "Inter:wght@400;500;600;700",
+    "Manrope": "Manrope:wght@400;500;600;700",
+    "DM Sans": "DM+Sans:wght@400;500;600;700",
+    "Public Sans": "Public+Sans:wght@400;500;600;700",
+    "Work Sans": "Work+Sans:wght@400;500;600;700",
+    "Source Sans 3": "Source+Sans+3:wght@400;600;700",
+    "Space Grotesk": "Space+Grotesk:wght@400;500;600;700",
+    "JetBrains Mono": "JetBrains+Mono:wght@400;500;600;700",
+}
+
+def inject_fiori_design_system(theme_name: str, font_name: str):
+    t = FIORI_THEMES[theme_name]
+    font_query = FIORI_FONTS[font_name]
+    input_bg = "#0F172A" if t["is_dark"] else "#FFFFFF"
+    input_text = "#F1F5F9" if t["is_dark"] else "#1D2D3E"
+
     st.markdown(f"""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family={font_query}&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
         :root {{
-            --bg-main: {theme['bg_main']};
-            --bg-card: {theme['bg_card']};
-            --bg-sidebar: {theme['bg_sidebar']};
-            --text-primary: {theme['text_primary']};
-            --text-secondary: {theme['text_secondary']};
-            --sidebar-text: {theme['sidebar_text']};
-            --accent: {theme['accent']};
-            --danger: {theme['danger']};
-            --success: {theme['success']};
-            --border-subtle: rgba(148, 163, 184, 0.24);
+            --shell-bg: {t['shell_bg']};
+            --shell-text: {t['shell_text']};
+            --bg-canvas: {t['bg_canvas']};
+            --bg-card: {t['bg_card']};
+            --text-primary: {t['text_primary']};
+            --text-secondary: {t['text_secondary']};
+            --accent: {t['accent']};
+            --accent-text: {t['accent_text']};
+            --danger: {t['danger']};
+            --danger-bg: {t['danger_bg']};
+            --success: {t['success']};
+            --success-bg: {t['success_bg']};
+            --border: {t['border']};
         }}
 
-        /* Ham Streamlit Öğelerini Gizle */
+        /* 1. Ham Streamlit İzlerini ve Sol Sidebar'ı Gizle */
         #MainMenu, footer, header[data-testid="stHeader"] {{ visibility: hidden; height: 0; }}
-        .stDeployButton, [data-testid="stToolbar"] {{ display: none !important; }}
+        .stDeployButton, [data-testid="stToolbar"], [data-testid="collapsedControl"] {{ display: none !important; }}
+        section[data-testid="stSidebar"] {{ display: none !important; }}
 
-        /* Ana Konteyner & Tipografi */
+        /* 2. Ana Kanvas & Dinamik Tipografi */
         .stApp {{
-            background-color: var(--bg-main) !important;
+            background-color: var(--bg-canvas) !important;
             color: var(--text-primary) !important;
-            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif !important;
         }}
         .block-container {{
-            padding-top: 1.2rem !important;
-            padding-bottom: 2rem !important;
-            max-width: 1440px;
+            padding-top: 0.9rem !important;
+            padding-bottom: 2.5rem !important;
+            max-width: 1460px;
         }}
-        section[data-testid="stSidebar"] {{
-            background-color: var(--bg-sidebar) !important;
-            border-right: 1px solid var(--border-subtle);
-            width: 285px !important;
+        h1, h2, h3, h4, p, label, span, div {{
+            font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif;
         }}
-        section[data-testid="stSidebar"] * {{
-            color: var(--sidebar_text);
-        }}
-        section[data-testid="stSidebar"] input, section[data-testid="stSidebar"] select {{
-            color: #0F172A !important;
+        .stMarkdown, .stText, label {{
+            color: var(--text-primary) !important;
         }}
 
-        /* Üst Utility Başlık Çubuğu */
-        .top-utility-bar {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            padding: 14px 20px;
-            margin-bottom: 14px;
+        /* Form Input ve Selectbox Kontrast Güvencesi */
+        input, textarea, select, [data-baseweb="select"] > div, [data-baseweb="input"] > div {{
+            background-color: {input_bg} !important;
+            color: {input_text} !important;
+            border-color: var(--border) !important;
+            border-radius: 6px !important;
+        }}
+
+        /* 3. SAP Fiori Shell Bar (Üst Kabuk Çubuğu) */
+        .fiori-shell-bar {{
+            background-color: var(--shell-bg);
+            color: var(--shell-text);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
         }}
-        .brand-title {{
-            font-size: 1.25rem;
+        .fiori-brand {{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }}
+        .fiori-logo-box {{
+            background-color: var(--accent);
+            color: var(--accent-text);
             font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.01em;
+            font-size: 0.95rem;
+            padding: 5px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.03em;
         }}
-        .status-pill {{
-            display: inline-block;
-            background: rgba(16, 185, 129, 0.14);
-            color: var(--success);
-            border: 1px solid var(--success);
-            border-radius: 999px;
-            padding: 3px 11px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }}
-
-        /* Kurumsal KPI Kartları */
-        .regtech-kpi-card {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            padding: 1.15rem 1.3rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }}
-        .kpi-danger {{ border-top: 4px solid var(--danger); }}
-        .kpi-neutral {{ border-top: 4px solid var(--accent); }}
-        .kpi-success {{
-            border-top: 4px solid var(--success);
-            background: linear-gradient(180deg, rgba(16, 185, 129, 0.09) 0%, var(--bg-card) 100%);
-        }}
-        .kpi-label {{
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            margin-bottom: 0.35rem;
-        }}
-        .kpi-value {{
-            font-family: 'JetBrains Mono', monospace;
-            font-variant-numeric: tabular-nums;
-            font-size: 1.68rem;
+        .fiori-title {{
+            font-size: 1.12rem;
             font-weight: 700;
-            line-height: 1.2;
+            color: var(--shell-text);
         }}
-        .kpi-sub {{
+        .fiori-subtitle {{
             font-size: 0.78rem;
-            color: var(--text-secondary);
-            margin-top: 0.35rem;
+            opacity: 0.85;
+            color: var(--shell-text);
+        }}
+        .fiori-compliance-badge {{
+            background-color: rgba(16, 185, 129, 0.18);
+            color: #34D399;
+            border: 1px solid rgba(52, 211, 153, 0.45);
+            border-radius: 999px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
         }}
 
-        /* 6 Sekmeli Navigasyon Barı */
+        /* 4. Fiori Yatay Sekme Navigasyonu (Aktif Sekme Altı 3px Çizgi) */
         .stTabs [data-baseweb="tab-list"] {{
-            gap: 6px;
             background-color: var(--bg-card);
-            padding: 6px;
-            border-radius: 10px;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 10px;
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }}
         .stTabs [data-baseweb="tab"] {{
-            border-radius: 7px;
-            padding: 8px 15px;
-            font-weight: 600;
-            font-size: 0.86rem;
-            color: var(--text-secondary);
+            background-color: transparent !important;
+            color: var(--text-secondary) !important;
+            font-weight: 600 !important;
+            font-size: 0.86rem !important;
+            padding: 10px 14px !important;
+            border-bottom: 3px solid transparent !important;
+            border-radius: 0px !important;
         }}
         .stTabs [aria-selected="true"] {{
-            background-color: var(--accent) !important;
-            color: #FFFFFF !important;
+            color: var(--accent) !important;
+            border-bottom: 3px solid var(--accent) !important;
         }}
 
-        /* Kilitli Önizleme Kutusu */
-        .paywall-card {{
+        /* 5. Modüler Fiori Tile / KPI Kartları */
+        .fiori-tile {{
             background-color: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-left: 4px solid var(--accent);
-            border-radius: 10px;
-            padding: 16px 20px;
-            margin-top: 10px;
-        }}
-        .blur-sheet {{
-            background: rgba(148, 163, 184, 0.08);
-            border: 1px dashed var(--border-subtle);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 12px 16px;
-            margin-top: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            padding: 18px 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            height: 100%;
         }}
-        .blur-mask {{
+        .fiori-tile-danger {{
+            border-top: 3px solid var(--danger);
+            background: linear-gradient(180deg, var(--danger-bg) 0%, var(--bg-card) 45%);
+        }}
+        .fiori-tile-neutral {{
+            border-top: 3px solid var(--accent);
+        }}
+        .fiori-tile-success {{
+            border-top: 3px solid var(--success);
+            background: linear-gradient(180deg, var(--success-bg) 0%, var(--bg-card) 55%);
+        }}
+        .tile-header {{
+            font-size: 0.80rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 10px;
+        }}
+        .tile-bottom-row {{
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+        }}
+        .tile-kpi {{
+            font-family: 'JetBrains Mono', monospace !important;
+            font-variant-numeric: tabular-nums !important;
+            font-size: 1.72rem;
+            font-weight: 700;
+            line-height: 1.15;
+        }}
+        .tile-pill {{
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }}
+        .tile-footnote {{
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }}
+
+        /* 6. Butonlar ve Paywall Kartı */
+        .stButton > button[kind="primary"], .stFormSubmitButton > button {{
+            background-color: var(--accent) !important;
+            color: var(--accent-text) !important;
+            border: none !important;
+            font-weight: 600 !important;
+            border-radius: 6px !important;
+            padding: 0.55rem 1rem !important;
+        }}
+        .fiori-paywall {{
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-top: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }}
+        .blur-doc-preview {{
+            background-color: var(--bg-canvas);
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-top: 10px;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-variant-numeric: tabular-nums !important;
+            font-size: 0.79rem;
+            color: var(--text-primary);
+        }}
+        .blur-overlay {{
             filter: blur(3.5px);
             user-select: none;
             opacity: 0.6;
@@ -992,96 +1118,90 @@ if "vault_data" not in st.session_state:
         "prec_actual_see": 0.45,
         "history": []
     }
+if "last_audit_findings" not in st.session_state:
+    st.session_state["last_audit_findings"] = []
 
 vd = st.session_state["vault_data"]
 
-# --- ÜST UTILITY HEADER & SAĞ ÜST 10 RENK PALETİ SEÇİCİSİ ---
-hdr_left, hdr_right = st.columns([1.85, 1.15])
-with hdr_right:
-    selected_theme_name = st.selectbox(
-        "🎨 Arayüz Renk Paleti (10 Hazır Tema)",
-        list(THEMES.keys()),
-        index=0,
-        label_visibility="collapsed"
-    )
+# --- SAP FIORI SHELL BAR & SAĞ ÜST 4'LÜ KONTROL ALANI ---
+shell_left, shell_ctrl1, shell_ctrl2, shell_ctrl3, shell_ctrl4 = st.columns([2.2, 1.15, 0.95, 0.65, 0.95])
 
-active_theme = THEMES[selected_theme_name]
-apply_corporate_theme(active_theme)
+with shell_ctrl1:
+    selected_theme_name = st.selectbox("Tema", list(FIORI_THEMES.keys()), index=0, label_visibility="collapsed")
+with shell_ctrl2:
+    selected_font_name = st.selectbox("Yazı Tipi", list(FIORI_FONTS.keys()), index=0, label_visibility="collapsed")
 
-with hdr_left:
-    st.markdown("""
-    <div class="top-utility-bar">
-        <div>
-            <span class="brand-title">🛡️ TR-CBAM</span>
-            <span class="status-pill">● AB SKDM Mevzuat Uyumlu ((EU) 2026/1740)</span>
-            <div style="font-size:0.82rem; color:var(--text-secondary); margin-top:4px;">
-                AB Sınırda Karbon Ceza Kalkanı, Termodinamik Denetim ve İhracat Uyum Platformu
+inject_fiori_design_system(selected_theme_name, selected_font_name)
+active_theme = FIORI_THEMES[selected_theme_name]
+
+with shell_ctrl3:
+    f_list = st.session_state.get("last_audit_findings", [])
+    crit_n = sum(1 for x in f_list if x["level"] == "CRITICAL")
+    bell_label = f"🔔 ({crit_n})" if crit_n > 0 else "🔔 (0)"
+    with st.popover(bell_label, use_container_width=True):
+        st.markdown("**Denetçi Ön-Kontrol Bildirimleri**")
+        if not f_list:
+            st.caption("Henüz analiz çalıştırılmadı. Sevkiyat analizi sonrası termodinamik ve mevzuat uyarıları burada görünür.")
+        else:
+            for item_f in f_list:
+                if item_f["level"] == "CRITICAL":
+                    st.error(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
+                elif item_f["level"] == "WARNING":
+                    st.warning(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
+                else:
+                    st.success(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
+
+with shell_ctrl4:
+    with st.popover("🏢 Profil & Lisans", use_container_width=True):
+        st.markdown("**Kurumsal Lisans & Piyasa**")
+        license_key = st.text_input("Lisans Anahtarı", type="password", value="", placeholder="TRCBAM-PRO-XXXX")
+        is_licensed, license_label = check_license_active(license_key)
+        if is_licensed:
+            st.success(f"✓ {license_label}")
+        else:
+            st.warning(f"🔒 {license_label}")
+
+        year_choice = st.selectbox("Beyan Yılı", list(YEAR_RULES.keys()))
+        yr_rule = YEAR_RULES[year_choice]
+        cbam_cert_price = st.number_input("AB ETS Karbon Fiyatı (€ / tCO₂e)", min_value=10.0, value=82.32, step=0.5)
+        if yr_rule["year"] in [2026, 2027]:
+            local_cp_eff = 0.0
+            st.caption("🇹🇷 TR-ETS 2026–2027 Mahsup: **0,00 €/tCO₂e**")
+        else:
+            local_cp_eff = st.number_input("TR-ETS Mahsup (€ / tCO₂e)", min_value=0.0, value=15.0, step=1.0)
+
+with shell_left:
+    st.markdown(f"""
+    <div class="fiori-shell-bar">
+        <div class="fiori-brand">
+            <div class="fiori-logo-box">TR-CBAM</div>
+            <div>
+                <div class="fiori-title">AB Sınırda Karbon (SKDM) Ceza Kalkanı</div>
+                <div class="fiori-subtitle">İhracat Uyum, Termodinamik Denetim & Alıcı Teklif Platformu • ETS: <strong>{cbam_cert_price:.2f} €/tCO₂e</strong></div>
             </div>
         </div>
+        <div class="fiori-compliance-badge">● AB SKDM Mevzuat Uyumlu</div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- SOL SİDEBAR (285px DARALTILMIŞ & ODAKLI) ---
-with st.sidebar:
-    st.markdown("### 🔑 Lisans & Erişim Durumu")
-    license_key = st.text_input("Kurumsal Lisans Anahtarı", type="password", value="", placeholder="TRCBAM-PRO-XXXX")
-    is_licensed, license_label = check_license_active(license_key)
-    if is_licensed:
-        st.success(f"✓ {license_label}")
-    else:
-        st.warning(f"🔒 {license_label}")
-
-    st.divider()
-    st.markdown("### 📅 Beyan Dönemi & Piyasa")
-    year_choice = st.selectbox("Beyan Yılı", list(YEAR_RULES.keys()))
-    yr_rule = YEAR_RULES[year_choice]
-    cbam_cert_price = st.number_input("AB ETS Karbon Fiyatı (€ / tCO₂e)", min_value=10.0, value=82.32, step=0.5)
-
-    if yr_rule["year"] in [2026, 2027]:
-        local_cp_eff = 0.0
-        st.caption("🇹🇷 TR-ETS 2026–2027 Mahsup: **0,00 €/tCO₂e**")
-    else:
-        local_cp_eff = st.number_input("TR-ETS Mahsup (€ / tCO₂e)", min_value=0.0, value=15.0, step=1.0)
-
-    st.divider()
-    with st.expander("⚙️ Gelişmiş Tesis & Şifreli Kasa Ayarları (.cbamvault)", expanded=False):
-        broker_name = st.text_input("Danışmanlık / Kurum Unvanı (White-Label)", value="TR-CBAM Kurumsal Uyum")
-        broker_logo = st.file_uploader("Kurumsal Logo Yükle (PDF Anteti)", type=["png", "jpg", "jpeg"])
-        installation_id = st.text_input("CBAM Registry Installation ID", value=vd["installation_id"])
-        unlocode = st.text_input("UN/LOCODE", value=vd["unlocode"])
-        coordinates = st.text_input("Coğrafi Koordinatlar", value=vd["coordinates"])
-        verifier_id = st.text_input("Akredite Doğrulayıcı ID ((EU) 2025/2547)", value="PENDING-VERIFIER-2026")
-
-        st.markdown("---")
-        vault_pass = st.text_input("Tesis Kasa Parolası (AES-256)", type="password", value="")
-        uploaded_vault = st.file_uploader("Kayıtlı Kasa Yükle (.cbamvault)", type=["cbamvault"])
-        if uploaded_vault and vault_pass:
-            if st.button("🔓 Kasayı Çöz ve Yükle", use_container_width=True):
-                try:
-                    loaded_dict = decrypt_vault_payload(uploaded_vault.getvalue(), vault_pass)
-                    st.session_state["vault_data"].update(loaded_dict)
-                    vd = st.session_state["vault_data"]
-                    st.success(f"Kasa yüklendi: {vd['company_name']}")
-                except Exception:
-                    st.error("Parola hatalı veya kasa dosyası bozuk.")
-
-# --- 6 SEKMELİ KURUMSAL NAVİGASYON ---
+# --- 6 ANA MODÜL YATAY SEKME NAVİGASYONU ---
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "🏭 Sevkiyat & Ceza Analizi",
-    "📨 Gümrük Müşaviri Referral",
-    "🔌 Logo / Mikro / SAP Aktarımı",
-    "🤝 Tedarikçi (Precursor) Portalı",
-    "📊 Çoklu Sevkiyat & 50t Eşiği",
-    "📚 Resmi Katalog (570 CN)"
+    "1. Sevkiyat & Ceza Analizi",
+    "2. Gümrük Müşaviri Referral",
+    "3. ERP Veri Aktarımı",
+    "4. Tedarikçi (Precursor) Portalı",
+    "5. Çoklu Sevkiyat & 50t Eşiği",
+    "6. Resmi Katalog"
 ])
 
 # ==============================================================================
-# SEKME 1: %38 SOL GİRİŞ / %62 SAĞ FİNANSAL ÇIKTI
+# SEKME 1: SEVKİYAT & CEZA ANALİZİ (SAP FIORI MODÜLER KART IZGARASI)
 # ==============================================================================
 with tab1:
-    col_left, col_right = st.columns([1.1, 1.8], gap="large")
+    col_left, col_right = st.columns([1.08, 1.82], gap="large")
 
     with col_left:
+        st.markdown('<div class="fiori-tile">', unsafe_allow_html=True)
         ui_mode = st.radio(
             "Çalışma Modu",
             ["⚡ Hızlı Analiz Modu (4 Temel Veri)", "🔬 Detaylı Mühendislik Modu"],
@@ -1100,7 +1220,7 @@ with tab1:
             f"1. İhracat Ürünü CN / GTİP Kodu ({len(filtered_cns)} kayıt)",
             filtered_cns,
             index=default_idx,
-            format_func=lambda x: f"{format_cn(x)} | [{CATALOG[x]['s']}] {CATALOG[x]['d'][:65]}"
+            format_func=lambda x: f"{format_cn(x)} | [{CATALOG[x]['s']}] {CATALOG[x]['d'][:62]}"
         )
         sel_item = CATALOG[selected_cn]
 
@@ -1134,7 +1254,7 @@ with tab1:
                 auto_gas = dg
                 st.success(f"Doğalgaz okundu: **{dg:,.2f} m³**")
 
-        with st.form("cbam_main_form"):
+        with st.form("fiori_main_form"):
             company_name = st.text_input("İhracatçı Firma Unvanı (TR)", value=vd["company_name"])
             buyer_company = st.text_input("AB İthalatçı / Müşteri Unvanı", value=vd.get("buyer_company", "Muster Stahlhandel GmbH (DE)"))
 
@@ -1185,156 +1305,224 @@ with tab1:
 
             run_btn = st.form_submit_button("🛡️ İhracat Ceza Riskini Hesapla & AB Alıcı Raporu Oluştur", use_container_width=True, type="primary")
 
-    if run_btn:
-        fuels_input = {"dogalgaz": q_gas, "tas_komuru": q_coal, "kok_komuru": q_coke, "linyit": q_lignite, "fuel_oil": q_fueloil, "lpg": q_lpg}
-        precursors_input = [{"cn": prec_cn, "m_i": prec_mi, "origin": prec_origin, "verified": prec_verified, "actual_see": prec_actual_see, "route": prec_route}]
+        # Bilişsel Yük Yönetimi: Tesis Sicil, White-Label Logo & Şifreli Kasa Kapalı Çekmecede
+        with st.expander("⚙️ Gelişmiş Tesis Sicil, White-Label Logo & Şifreli Kasa (.cbamvault)", expanded=False):
+            broker_name = st.text_input("Danışmanlık / Kurum Unvanı (White-Label)", value="TR-CBAM Kurumsal Uyum")
+            broker_logo = st.file_uploader("Kurumsal Logo Yükle (PDF Anteti)", type=["png", "jpg", "jpeg"])
+            installation_id = st.text_input("CBAM Registry Installation ID", value=vd["installation_id"])
+            unlocode = st.text_input("UN/LOCODE", value=vd["unlocode"])
+            coordinates = st.text_input("Coğrafi Koordinatlar", value=vd["coordinates"])
+            verifier_id = st.text_input("Akredite Doğrulayıcı ID ((EU) 2025/2547)", value="PENDING-VERIFIER-2026")
+
+            st.markdown("---")
+            vault_pass = st.text_input("Tesis Kasa Parolası (AES-256)", type="password", value="")
+            uploaded_vault = st.file_uploader("Kayıtlı Kasa Yükle (.cbamvault)", type=["cbamvault"])
+            if uploaded_vault and vault_pass:
+                if st.button("🔓 Kasayı Çöz ve Yükle", use_container_width=True):
+                    try:
+                        loaded_dict = decrypt_vault_payload(uploaded_vault.getvalue(), vault_pass)
+                        st.session_state["vault_data"].update(loaded_dict)
+                        vd = st.session_state["vault_data"]
+                        st.success(f"Kasa yüklendi: {vd['company_name']}")
+                    except Exception:
+                        st.error("Parola hatalı veya kasa dosyası bozuk.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Varsayılan başlangıç hesaplaması (ilk açılışta da ekran dolu ve canlı görünsün)
+    if not run_btn and "cached_run" not in st.session_state:
+        fuels_input = {"dogalgaz": float(vd["q_gas"]), "tas_komuru": 0.0, "kok_komuru": 0.0, "linyit": 0.0, "fuel_oil": 0.0, "lpg": 0.0}
+        precursors_input = [{"cn": vd["prec_cn"], "m_i": float(vd["prec_mi"]), "origin": "Türkiye / Diğer Üçüncü Ülke", "verified": False, "actual_see": 0.45, "route": "(E)"}]
         res = calculate_cbam_core(
-            selected_cn, selected_route, eu_tonnage, total_prod_ton,
-            fuels_input, process_em_ton, elec_kwh, active_grid_ef,
-            precursors_input, func_ratio, cbam_cert_price, local_cp_eff, yr_rule
+            vd["selected_cn"], vd["selected_route"], float(vd["eu_tonnage"]), float(vd["total_prod_ton"]),
+            fuels_input, 0.0, float(vd["elec_kwh"]), EU_DEFAULT_TR_GRID_EF,
+            precursors_input, 1.0, cbam_cert_price, local_cp_eff, yr_rule
         )
         meta_obj = {
-            "company_name": company_name, "buyer_company": buyer_company,
+            "company_name": vd["company_name"], "buyer_company": vd["buyer_company"],
             "broker_name": broker_name, "installation_id": installation_id,
             "unlocode": unlocode, "coordinates": coordinates, "verifier_id": verifier_id,
-            "tonnage": eu_tonnage, "invoice_status": invoice_status, "year": yr_rule["year"]
+            "tonnage": float(vd["eu_tonnage"]), "invoice_status": invoice_status, "year": yr_rule["year"]
         }
         findings, score, crit_c, warn_c, pass_c, bm_thermo, elec_pct, fuel_pct = run_verifier_audit_matrix(
-            selected_cn, res["sector"], selected_route, eu_tonnage, total_prod_ton,
-            fuels_input, process_em_ton, elec_kwh, has_ppa, precursors_input, func_ratio, res, meta_obj
+            vd["selected_cn"], res["sector"], vd["selected_route"], float(vd["eu_tonnage"]), float(vd["total_prod_ton"]),
+            fuels_input, 0.0, float(vd["elec_kwh"]), False, precursors_input, 1.0, res, meta_obj
         )
+        st.session_state["last_audit_findings"] = findings
+    else:
+        if run_btn:
+            fuels_input = {"dogalgaz": q_gas, "tas_komuru": q_coal, "kok_komuru": q_coke, "linyit": q_lignite, "fuel_oil": q_fueloil, "lpg": q_lpg}
+            precursors_input = [{"cn": prec_cn, "m_i": prec_mi, "origin": prec_origin, "verified": prec_verified, "actual_see": prec_actual_see, "route": prec_route}]
+            st.session_state["vault_data"].update({
+                "company_name": company_name, "buyer_company": buyer_company,
+                "installation_id": installation_id, "unlocode": unlocode, "coordinates": coordinates,
+                "selected_cn": selected_cn, "selected_route": selected_route,
+                "total_prod_ton": total_prod_ton, "eu_tonnage": eu_tonnage,
+                "q_gas": q_gas, "elec_kwh": elec_kwh,
+                "prec_cn": prec_cn, "prec_mi": prec_mi,
+                "prec_verified": prec_verified, "prec_actual_see": prec_actual_see,
+            })
+            st.session_state["cached_run"] = {
+                "cn": selected_cn, "route": selected_route, "eu_t": eu_tonnage, "tot_t": total_prod_ton,
+                "fuels": fuels_input, "proc": process_em_ton, "elec": elec_kwh, "grid": active_grid_ef,
+                "precs": precursors_input, "func": func_ratio, "has_ppa": has_ppa,
+                "comp": company_name, "buyer": buyer_company, "inv": invoice_status
+            }
 
-        st.session_state["vault_data"].update({
-            "company_name": company_name, "buyer_company": buyer_company,
-            "installation_id": installation_id, "unlocode": unlocode, "coordinates": coordinates,
-            "selected_cn": selected_cn, "selected_route": selected_route,
-            "total_prod_ton": total_prod_ton, "eu_tonnage": eu_tonnage,
-            "q_gas": q_gas, "elec_kwh": elec_kwh,
-            "prec_cn": prec_cn, "prec_mi": prec_mi,
-            "prec_verified": prec_verified, "prec_actual_see": prec_actual_see,
-        })
+        cr = st.session_state["cached_run"]
+        res = calculate_cbam_core(
+            cr["cn"], cr["route"], cr["eu_t"], cr["tot_t"],
+            cr["fuels"], cr["proc"], cr["elec"], cr["grid"],
+            cr["precs"], cr["func"], cbam_cert_price, local_cp_eff, yr_rule
+        )
+        meta_obj = {
+            "company_name": cr["comp"], "buyer_company": cr["buyer"],
+            "broker_name": broker_name, "installation_id": installation_id,
+            "unlocode": unlocode, "coordinates": coordinates, "verifier_id": verifier_id,
+            "tonnage": cr["eu_t"], "invoice_status": cr["inv"], "year": yr_rule["year"]
+        }
+        findings, score, crit_c, warn_c, pass_c, bm_thermo, elec_pct, fuel_pct = run_verifier_audit_matrix(
+            cr["cn"], res["sector"], cr["route"], cr["eu_t"], cr["tot_t"],
+            cr["fuels"], cr["proc"], cr["elec"], cr["has_ppa"], cr["precs"], cr["func"], res, meta_obj
+        )
+        st.session_state["last_audit_findings"] = findings
 
-        with col_right:
-            # 1. ÜST SATIR: 3 BÜYÜK FİNANSAL KPI KARTI
-            k1, k2, k3 = st.columns(3)
-            with k1:
-                st.markdown(f"""
-                <div class="regtech-kpi-card kpi-danger">
-                    <div class="kpi-label">AB Varsayılan Tarife Cezası</div>
-                    <div class="kpi-value" style="color:var(--danger);">{res['tax_default']:,.0f} €</div>
-                    <div class="kpi-sub">AB alıcısının faturanızdan kesebileceği tutar</div>
+    with col_right:
+        # ÜST SATIR: 3 MODÜLER FIORI KPI KARTI
+        k1, k2, k3 = st.columns(3)
+        with k1:
+            st.markdown(f"""
+            <div class="fiori-tile fiori-tile-danger">
+                <div class="tile-header">AB Varsayılan Tarife Cezası</div>
+                <div class="tile-bottom-row">
+                    <div class="tile-kpi" style="color:var(--danger);">{res['tax_default']:,.0f} €</div>
+                    <div class="tile-pill" style="background:var(--danger-bg); color:var(--danger);">+%{res['markup_pct']} Marj</div>
                 </div>
-                """, unsafe_allow_html=True)
-            with k2:
-                st.markdown(f"""
-                <div class="regtech-kpi-card kpi-neutral">
-                    <div class="kpi-label">Tesis Gerçek SKDM Yükü</div>
-                    <div class="kpi-value" style="color:var(--text-primary);">{res['tax_actual']:,.0f} €</div>
-                    <div class="kpi-sub">Gerçek SEE: {res['actual_see_per_ton']:.3f} tCO₂e/t</div>
+                <div class="tile-footnote">AB alıcısının faturanızdan kesebileceği tutar</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with k2:
+            st.markdown(f"""
+            <div class="fiori-tile fiori-tile-neutral">
+                <div class="tile-header">Tesis Gerçek SKDM Yükü</div>
+                <div class="tile-bottom-row">
+                    <div class="tile-kpi" style="color:var(--text-primary);">{res['tax_actual']:,.0f} €</div>
+                    <div class="tile-pill" style="background:rgba(148,163,184,0.16); color:var(--text-primary);">{res['actual_see_per_ton']:.3f} t/t</div>
                 </div>
-                """, unsafe_allow_html=True)
-            with k3:
-                st.markdown(f"""
-                <div class="regtech-kpi-card kpi-success">
-                    <div class="kpi-label">Korunan Net İhracat Avantajı</div>
-                    <div class="kpi-value" style="color:var(--success); font-size:1.9rem;">+{res['direct_savings']:,.0f} €</div>
-                    <div class="kpi-sub">Ton başına +{res['savings_per_ton_eur']:,.1f} € rekabet avantajı</div>
+                <div class="tile-footnote">Col A Kıyas Değeri: {res['col_a_bm']:.3f} tCO₂e/t</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with k3:
+            st.markdown(f"""
+            <div class="fiori-tile fiori-tile-success">
+                <div class="tile-header">Korunan Net İhracat Avantajı</div>
+                <div class="tile-bottom-row">
+                    <div class="tile-kpi" style="color:var(--success); font-size:1.85rem;">+{res['direct_savings']:,.0f} €</div>
+                    <div class="tile-pill" style="background:var(--success-bg); color:var(--success);">+{res['savings_per_ton_eur']:,.1f} €/t</div>
                 </div>
-                """, unsafe_allow_html=True)
+                <div class="tile-footnote">AB alıcısına sunulan net maliyet avantajı</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            st.write("")
-            # 2. ORTA SATIR: SOL (%65) PLOTLY GRAFİK + SAĞ (%35) DENETÇİ SKOR KARTI
-            mid_left, mid_right = st.columns([1.85, 1.0])
-            with mid_left:
-                fig = go.Figure(data=[
-                    go.Bar(
-                        x=["Kanıtsız Ceza (A)", "Gerçek Tesis Yükü (B)"],
-                        y=[res["tax_default"], res["tax_actual"]],
-                        marker_color=[active_theme["danger"], active_theme["success"]],
-                        text=[f"{res['tax_default']:,.0f} €", f"{res['tax_actual']:,.0f} €"],
-                        textposition="auto"
-                    )
-                ])
-                fig.update_layout(
-                    template="none",
-                    title=f"{company_name} — {yr_rule['year']} SKDM Maliyet Kıyaslaması (€)",
-                    height=265,
-                    margin=dict(l=20, r=20, t=42, b=20),
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    plot_bgcolor="rgba(0,0,0,0)",
-                    font=dict(color=active_theme["text_primary"], family="IBM Plex Sans"),
-                    xaxis=dict(showgrid=False),
-                    yaxis=dict(showgrid=True, gridcolor="rgba(148,163,184,0.2)")
+        st.write("")
+        # ORTA SATIR: %65 PLOTLY MALİYET KIYASLAMA + %35 TÜV/SGS UYUM ENDEKSİ
+        mid_left, mid_right = st.columns([1.85, 1.0])
+        with mid_left:
+            st.markdown('<div class="fiori-tile">', unsafe_allow_html=True)
+            fig = go.Figure(data=[
+                go.Bar(
+                    x=["Kanıtsız Default Ceza (A)", "Tesis Gerçek Yükü (B)"],
+                    y=[res["tax_default"], res["tax_actual"]],
+                    marker_color=[active_theme["danger"], active_theme["success"]],
+                    text=[f"{res['tax_default']:,.0f} €", f"{res['tax_actual']:,.0f} €"],
+                    textposition="auto",
+                    width=[0.42, 0.42]
                 )
-                st.plotly_chart(fig, use_container_width=True)
+            ])
+            fig.update_layout(
+                template="none",
+                title=dict(text=f"{meta_obj['company_name']} — {yr_rule['year']} SKDM Maliyet Kıyaslaması (€)", font=dict(size=14)),
+                height=250,
+                margin=dict(l=16, r=16, t=40, b=16),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color=active_theme["text_primary"], family=selected_font_name),
+                xaxis=dict(showgrid=False, linecolor=active_theme["border"]),
+                yaxis=dict(showgrid=True, gridcolor="rgba(148,163,184,0.18)")
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            with mid_right:
-                st.markdown(f"""
-                <div class="regtech-kpi-card kpi-neutral" style="height:255px;">
-                    <div class="kpi-label">TÜV / SGS Uyum Endeksi</div>
-                    <div class="kpi-value" style="color:var(--accent);">%{score} / 100</div>
-                    <div class="kpi-sub" style="margin-top:8px;">
-                        <strong>Türkiye Sektör Kıyas ({bm_thermo['label'][:24]}):</strong><br/>
-                        • Elektrik: <strong>P{elec_pct}</strong> ({res['elec_mwh_per_ton']:.2f} MWh/t)<br/>
-                        • Yakıt: <strong>P{fuel_pct}</strong> ({res['fuel_gj_per_ton']:.2f} GJ/t)<br/>
-                        • Bulgular: {crit_c} Kritik | {warn_c} Uyarı
-                    </div>
+        with mid_right:
+            score_color = active_theme["success"] if score >= 80 else (active_theme["accent"] if score >= 60 else active_theme["danger"])
+            st.markdown(f"""
+            <div class="fiori-tile fiori-tile-neutral">
+                <div class="tile-header">TÜV / SGS Denetim Skoru</div>
+                <div class="tile-bottom-row">
+                    <div class="tile-kpi" style="color:{score_color};">%{score} / 100</div>
+                    <div class="tile-pill" style="background:rgba(148,163,184,0.15); color:var(--text-primary);">{crit_c} Kritik</div>
                 </div>
-                """, unsafe_allow_html=True)
-
-            # 3. ALT SATIR: ÇIKTI & LİSANS BARİYERİ
-            logo_b = broker_logo.getvalue() if broker_logo else None
-            pdf_out = generate_corporate_pdf_core(meta_obj, res, {"score": score, "crit": crit_c, "warn": warn_c, "elec_pct": elec_pct, "fuel_pct": fuel_pct}, is_licensed=is_licensed, logo_bytes=logo_b)
-
-            if is_licensed:
-                buyer_pdf_out = generate_eu_buyer_pitch_pdf(meta_obj, res, buyer_company)
-                eu_xlsx_out = generate_eu_communication_template_xlsx(meta_obj, res)
-                xml_row = dict(res)
-                xml_row["tonnage"] = eu_tonnage
-                xml_out = generate_cbam_xml_core(meta_obj, [xml_row])
-
-                c_out1, c_out2, c_out3, c_out4 = st.columns(4)
-                c_out1.download_button("📥 Kurumsal Rapor PDF", data=pdf_out, file_name=f"TR_CBAM_Rapor_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
-                c_out2.download_button("🌍 AB Alıcı Teklifi EN PDF", data=buyer_pdf_out, file_name=f"EU_CBAM_Buyer_Offer_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
-                c_out3.download_button("📗 AB İletişim Şablonu .xlsx", data=eu_xlsx_out, file_name=f"EU_CBAM_Comm_Template_{selected_cn}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-                c_out4.download_button("🧾 CBAM Registry .xml", data=xml_out, file_name=f"EU_CBAM_O3CI_{selected_cn}.xml", mime="application/xml", use_container_width=True)
-            else:
-                st.markdown(f"""
-                <div class="paywall-card">
-                    <div style="font-weight:700; font-size:0.95rem;">🔒 Kurumsal Çıktı Paketi Kilitli</div>
-                    <div style="font-size:0.83rem; color:var(--text-secondary); margin-top:4px;">
-                        AB alıcınıza göndereceğiniz filigransız İngilizce Teklif PDF'ini, Resmi AB Excel İletişim Şablonunu (<code>.xlsx</code>) ve O3CI <code>.xml</code> dosyasını indirmek için sol menüden <strong>Kurumsal Lisans Anahtarınızı</strong> girin.
-                    </div>
-                    <div class="blur-sheet">
-                        <div><strong>📄 EU_CBAM_Buyer_Offer_{selected_cn}.pdf</strong> — Prepared by: {company_name} | For: {buyer_company} | Saving: +{res['direct_savings']:,.2f} EUR</div>
-                        <div class="blur-mask">Installation ID: {installation_id} | Actual SEE: {res['actual_see_per_ton']:.4f} tCO2e/t | Column A Benchmark: {res['col_a_bm']:.3f} | O3CI v3.2 XML Verified Payload...</div>
-                    </div>
+                <div class="tile-footnote" style="margin-top:14px; line-height:1.55;">
+                    <strong>Türkiye Termodinamik Kıyas:</strong><br/>
+                    • Elektrik: <strong>P{elec_pct}</strong> ({res['elec_mwh_per_ton']:.2f} MWh/t)<br/>
+                    • Yakıt: <strong>P{fuel_pct}</strong> ({res['fuel_gj_per_ton']:.2f} GJ/t)<br/>
+                    • Rota: <strong>{res['route_tag']}</strong> ({res['sector']})
                 </div>
-                """, unsafe_allow_html=True)
-                st.write("")
-                st.download_button("📥 Taslak Ön-Analiz Raporu İndir (Filigranlı PDF)", data=pdf_out, file_name=f"TASLAK_TR_CBAM_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
+            </div>
+            """, unsafe_allow_html=True)
 
-            if vault_pass:
-                vault_bytes = encrypt_vault_payload(st.session_state["vault_data"], vault_pass)
-                st.download_button("🔐 Şifreli Tesis Kasasını İndir (.cbamvault)", data=vault_bytes, file_name=f"{company_name.replace(' ', '_')}_{yr_rule['year']}.cbamvault", mime="application/json", use_container_width=True)
+        # ALT SATIR: HIZLI AKSİYON ŞERİDİ (ACTION PILLS & ENDOWMENT PAYWALL)
+        logo_b = broker_logo.getvalue() if broker_logo else None
+        pdf_out = generate_corporate_pdf_core(meta_obj, res, {"score": score, "crit": crit_c, "warn": warn_c, "elec_pct": elec_pct, "fuel_pct": fuel_pct}, is_licensed=is_licensed, logo_bytes=logo_b)
 
-            with st.expander(f"🛡️ Denetçi Ön-Kontrol Matrisi Bulguları ({crit_c} Kritik, {warn_c} Uyarı, {pass_c} Onaylı)"):
-                for f_item in findings:
-                    if f_item["level"] == "CRITICAL":
-                        st.error(f"**[{f_item['code']}] {f_item['title']}:** {f_item['detail']}")
-                    elif f_item["level"] == "WARNING":
-                        st.warning(f"**[{f_item['code']}] {f_item['title']}:** {f_item['detail']}")
-                    else:
-                        st.success(f"**[{f_item['code']}] {f_item['title']}:** {f_item['detail']}")
+        st.write("")
+        if is_licensed:
+            buyer_pdf_out = generate_eu_buyer_pitch_pdf(meta_obj, res, meta_obj["buyer_company"])
+            eu_xlsx_out = generate_eu_communication_template_xlsx(meta_obj, res)
+            xml_row = dict(res)
+            xml_row["tonnage"] = meta_obj["tonnage"]
+            xml_out = generate_cbam_xml_core(meta_obj, [xml_row])
+
+            a1, a2, a3, a4 = st.columns(4)
+            a1.download_button("📥 Kurumsal Rapor PDF", data=pdf_out, file_name=f"TR_CBAM_Rapor_{res['cn_raw']}.pdf", mime="application/pdf", use_container_width=True)
+            a2.download_button("🌍 AB Alıcı Teklifi EN PDF", data=buyer_pdf_out, file_name=f"EU_CBAM_Buyer_Offer_{res['cn_raw']}.pdf", mime="application/pdf", use_container_width=True)
+            a3.download_button("📗 AB İletişim Şablonu .xlsx", data=eu_xlsx_out, file_name=f"EU_CBAM_Comm_Template_{res['cn_raw']}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+            a4.download_button("🧾 CBAM Registry .xml", data=xml_out, file_name=f"EU_CBAM_O3CI_{res['cn_raw']}.xml", mime="application/xml", use_container_width=True)
+        else:
+            a1, a2, a3, a4 = st.columns(4)
+            a1.download_button("📥 Taslak Rapor PDF", data=pdf_out, file_name=f"TASLAK_TR_CBAM_{res['cn_raw']}.pdf", mime="application/pdf", use_container_width=True)
+            a2.button("🔒 AB Alıcı Teklifi EN PDF", disabled=True, use_container_width=True)
+            a3.button("🔒 AB İletişim Şablonu .xlsx", disabled=True, use_container_width=True)
+            a4.button("🔒 CBAM Registry .xml", disabled=True, use_container_width=True)
+
+            st.markdown(f"""
+            <div class="fiori-paywall">
+                <div style="font-weight:700; font-size:0.92rem; color:var(--text-primary);">🔒 Kurumsal Çıktı Paketi Kilitli (Deneme Modu)</div>
+                <div style="font-size:0.82rem; color:var(--text-secondary); margin-top:4px;">
+                    <strong>{meta_obj['company_name']}</strong> adına hesaplanan <strong>+{res['direct_savings']:,.0f} €</strong> maliyet avantajını belgeleyen
+                    filigransız İngilizce AB Alıcı Teklif PDF'ini, Resmi AB Excel İletişim Şablonunu (<code>.xlsx</code>) ve O3CI <code>.xml</code> dosyasını
+                    indirmek için sağ üstteki <strong>Profil & Lisans</strong> menüsünden kurumsal anahtarınızı girin.
+                </div>
+                <div class="blur-doc-preview">
+                    <div><strong>📄 EU_CBAM_Buyer_Offer_{res['cn_raw']}.pdf</strong> — Prepared by: {meta_obj['company_name']} | For: {meta_obj['buyer_company']} | Saving: +{res['direct_savings']:,.2f} EUR</div>
+                    <div class="blur-overlay">Installation ID: {installation_id} | Actual SEE: {res['actual_see_per_ton']:.4f} tCO2e/t | Column A Benchmark: {res['col_a_bm']:.3f} | O3CI v3.2 XML Verified Payload...</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        if vault_pass:
+            vault_bytes = encrypt_vault_payload(st.session_state["vault_data"], vault_pass)
+            st.write("")
+            st.download_button("🔐 Şifreli Tesis Kasasını İndir (.cbamvault)", data=vault_bytes, file_name=f"{meta_obj['company_name'].replace(' ', '_')}_{yr_rule['year']}.cbamvault", mime="application/json", use_container_width=True)
 
 # ==============================================================================
-# SEKME 2: GÜMRÜK MÜŞAVİRİ PASİF REFERRAL MODÜLÜ
+# SEKME 2: GÜMRÜK MÜŞAVİRİ REFERRAL
 # ==============================================================================
 with tab2:
+    st.markdown('<div class="fiori-tile">', unsafe_allow_html=True)
     st.subheader("📨 Gümrük Müşaviri Sıfır-Sorumluluk Müşteri Yönlendirme (Referral)")
-    st.markdown("Gümrük müşavirliklerinin müteselsil sorumluluk veya teknik danışmanlık yükü almadan, ihracatçı müşterilerine tek tıkla 2026 SKDM Risk Özeti iletmesini sağlar.")
+    st.caption("Gümrük müşavirliklerinin müteselsil sorumluluk veya teknik danışmanlık yükü almadan ihracatçı müşterilerine 2026 SKDM Risk Özeti iletmesini sağlar.")
 
-    gm1, gm2 = st.columns(2)
+    gm1, gm2 = st.columns(2, gap="large")
     with gm1:
         gm_client_name = st.text_input("İhracatçı Müşteri Unvanı", value="Kocaeli Metal Profil Sanayi A.Ş.")
         gm_dec_no = st.text_input("AB İhracat Beyanname / Referans No", value="26340100EX004812")
@@ -1346,9 +1534,10 @@ with tab2:
     est_save = est_def_tax * 0.62
 
     with gm2:
-        st.metric("Müşterinin Cezalı Default SKDM Riski", f"{est_def_tax:,.0f} €")
-        st.metric("Tesis Verisiyle Tahmini Kurtarılacak Tutar", f"+{est_save:,.0f} €")
-
+        g_k1, g_k2 = st.columns(2)
+        g_k1.markdown(f'<div class="fiori-tile fiori-tile-danger"><div class="tile-header">Cezalı Default Riski</div><div class="tile-kpi" style="color:var(--danger);">{est_def_tax:,.0f} €</div></div>', unsafe_allow_html=True)
+        g_k2.markdown(f'<div class="fiori-tile fiori-tile-success"><div class="tile-header">Tahmini Kurtarılan</div><div class="tile-kpi" style="color:var(--success);">+{est_save:,.0f} €</div></div>', unsafe_allow_html=True)
+        st.write("")
         invite_msg = f"""Sayın {gm_client_name} Dış Ticaret / Finans Yönetimi,
 
 Müşavirliğimiz aracılığıyla tescil edilen {gm_dec_no} referanslı ({format_cn(gm_cn)} GTİP kodlu, {gm_ton:,.1f} Ton) AB ihracat sevkiyatınız, 2026 AB Sınırda Karbon Düzenlemesi (SKDM) kesin dönem kapsamındadır.
@@ -1359,12 +1548,14 @@ TR-CBAM platformu üzerinden dönemlik elektrik ve doğalgaz tüketiminizi girer
 
 Saygılarımızla,
 {broker_name}"""
-        st.text_area("Müşteriye Gönderilecek Hazır Bilgilendirme Metni", value=invite_msg, height=230)
+        st.text_area("Müşteriye Gönderilecek Hazır Bilgilendirme Metni", value=invite_msg, height=215)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
-# SEKME 3: LOGO TİGER / MİKRO / NETSİS / SAP HIZLI VERİ AKTARIM SİHİRBAZI
+# SEKME 3: ERP VERİ AKTARIMI
 # ==============================================================================
 with tab3:
+    st.markdown('<div class="fiori-tile">', unsafe_allow_html=True)
     st.subheader("🔌 Logo Tiger / Mikro / Netsis / SAP Hızlı Veri Aktarım Modülü")
     erp_type = st.selectbox("Kaynak ERP / Muhasebe Sistemi", ["Logo Tiger / Go3", "Mikro Yazılım", "Netsis", "SAP S/4HANA (MM/PP)", "Diğer Özel Excel / CSV"])
     erp_file = st.file_uploader(f"{erp_type} Dışa Aktarım Dosyasını Yükle (.xlsx / .csv)", type=["xlsx", "csv"])
@@ -1372,7 +1563,7 @@ with tab3:
     if erp_file:
         try:
             df_erp = pd.read_csv(erp_file) if erp_file.name.lower().endswith(".csv") else pd.read_excel(erp_file)
-            st.write("Önizleme (İlk 5 Satır):", df_erp.head(5))
+            st.dataframe(df_erp.head(5), use_container_width=True)
             cols = list(df_erp.columns)
 
             m_c1, m_c2, m_c3, m_c4 = st.columns(4)
@@ -1389,15 +1580,17 @@ with tab3:
                 st.success(f"{erp_type} verileri başarıyla toplandı ve 1. Sekmeye aktarıldı!")
         except Exception as e:
             st.error(f"ERP dosyası okunamadı: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
-# SEKME 4: TEDARİKÇİ (PRECURSOR) VERİ PORTALI
+# SEKME 4: TEDARİKÇİ (PRECURSOR) PORTALI
 # ==============================================================================
 with tab4:
+    st.markdown('<div class="fiori-tile">', unsafe_allow_html=True)
     st.subheader("🤝 Tedarikçi Emisyon Veri Portalı (Precursor Network Effect)")
-    t_col1, t_col2 = st.columns(2)
+    t_col1, t_col2 = st.columns(2, gap="large")
     with t_col1:
-        st.markdown("### 1. Tedarikçiye Veri Talebi Oluştur")
+        st.markdown("#### 1. Tedarikçiye Veri Talebi Oluştur")
         sup_name = st.text_input("Tedarikçi Firma Unvanı", value="Anadolu Haddecilik / Biyet Sanayi A.Ş.")
         sup_cn = st.selectbox("Tedarik Edilen Öncül Hammadde CN Kodu", list(CATALOG.keys()), index=list(CATALOG.keys()).index("72071114") if "72071114" in CATALOG else 0, format_func=lambda x: f"{format_cn(x)} - {CATALOG[x]['d'][:50]}")
         sup_period = st.selectbox("Talep Edilen Veri Dönemi", ["2026 Q1–Q4 (Tam Yıl)", "2026 Q3", "2026 Q4"])
@@ -1415,10 +1608,10 @@ Lütfen aşağıdaki 3 bilgiyi doldurarak tarafımıza iletiniz:
 
 Saygılarımızla,
 {vd['company_name']} — Dış Ticaret & Sürdürülebilirlik Birimi"""
-        st.text_area("Tedarikçiye Gönderilecek Resmi Talep Metni", value=req_letter, height=260)
+        st.text_area("Tedarikçiye Gönderilecek Resmi Talep Metni", value=req_letter, height=250)
 
     with t_col2:
-        st.markdown("### 2. Tedarikçi Verisini Sisteme Aktar")
+        st.markdown("#### 2. Tedarikçi Verisini Sisteme Aktar")
         in_sup_cn = st.selectbox("Gelen Tedarikçi CN Kodu", list(CATALOG.keys()), index=list(CATALOG.keys()).index("72071114") if "72071114" in CATALOG else 0, format_func=lambda x: f"{format_cn(x)} ({CATALOG[x]['s']})")
         in_sup_see = st.number_input("Tedarikçi Beyan Edilen SEE (tCO₂e / Ton)", min_value=0.01, value=0.42, step=0.02)
         in_sup_mi = st.number_input("1 Ton Mamuldeki Kullanım Oranı m_i (t/t)", min_value=1.00, value=1.05, step=0.01)
@@ -1430,12 +1623,14 @@ Saygılarımızla,
             st.session_state["vault_data"]["prec_mi"] = in_sup_mi
             st.session_state["vault_data"]["prec_verified"] = in_sup_ver
             st.success("Tedarikçi verisi ana hesaplama sekmesine aktarıldı!")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
-# SEKME 5: ÇOKLU KALEM & KÜMÜLATİF 50 TON EŞİK KONTROLÜ
+# SEKME 5: ÇOKLU SEVKİYAT & 50 TON EŞİĞİ
 # ==============================================================================
 with tab5:
-    st.subheader("Çoklu Sevkiyat Analizi & (EU) 2025/2083 Madde 2a Kümülatif 50 Ton Kontrolü")
+    st.markdown('<div class="fiori-tile">', unsafe_allow_html=True)
+    st.subheader("📊 Çoklu Sevkiyat Analizi & (EU) 2025/2083 Madde 2a Kümülatif 50 Ton Kontrolü")
     sample_df = pd.DataFrame([
         {"Urun_Adi": "Sıcak Haddelenmiş Sac", "CN_Kodu": "72085120", "Rota": "(E)", "Tesis_Uretim_Ton": 1000.0, "AB_Sevkiyat_Ton": 30.0, "Dogalgaz_m3": 18000.0, "Elektrik_kWh": 150000.0, "Oncul_CN": "72071114", "Oncul_mi": 1.05},
         {"Urun_Adi": "Çelik Cıvata", "CN_Kodu": "73181588", "Rota": "(E)", "Tesis_Uretim_Ton": 400.0, "AB_Sevkiyat_Ton": 15.0, "Dogalgaz_m3": 6000.0, "Elektrik_kWh": 80000.0, "Oncul_CN": "72131000", "Oncul_mi": 1.08},
@@ -1493,7 +1688,6 @@ with tab5:
 
             df_out = pd.DataFrame(table_rows)
             st.dataframe(df_out, use_container_width=True)
-            st.metric("Toplam Sevkiyat Tasarrufu", f"+{df_out['Net Tasarruf (€)'].sum():,.2f} €")
 
             if is_licensed:
                 meta_batch = {
@@ -1507,12 +1701,14 @@ with tab5:
                 st.info("🔒 Toplu beyan XML çıktısı kurumsal lisans anahtarı ile aktifleşir.")
         except Exception as e:
             st.error(f"Excel işleme hatası: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
-# SEKME 6: 570 CN KODLU TAM RESMİ KATALOG
+# SEKME 6: RESMİ KATALOG (570 CN KODU)
 # ==============================================================================
 with tab6:
-    st.subheader("Avrupa Komisyonu Resmi 2026 Kesin Dönem Türkiye & Benchmark Kataloğu (570 CN Kodu)")
+    st.markdown('<div class="fiori-tile">', unsafe_allow_html=True)
+    st.subheader("📚 Avrupa Komisyonu Resmi 2026 Kesin Dönem Türkiye & Benchmark Kataloğu (570 CN Kodu)")
     cat_rows = []
     for cn_8, v in CATALOG.items():
         cat_rows.append({
@@ -1526,3 +1722,4 @@ with tab6:
             "Column B Benchmark (Tam Zincir)": ", ".join([f"{x[0]} {x[1]}".strip() for x in v["b"]]),
         })
     st.dataframe(pd.DataFrame(cat_rows), use_container_width=True, height=550)
+    st.markdown('</div>', unsafe_allow_html=True)
