@@ -181,29 +181,28 @@ def inject_design_system(theme_name: str, font_name: str):
         .stDeployButton, [data-testid="stToolbar"], [data-testid="collapsedControl"] {{ display: none !important; }}
         section[data-testid="stSidebar"] {{ display: none !important; }}
 
-        /* Ana Sayfa Arka Planı */
-        .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {{
+        /* Ana Sayfa Arka Planı (En alta kadar kesintisiz renk verir) */
+        html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {{
             background-color: {t['bg_canvas']} !important;
             color: {t['text_primary']} !important;
-            overflow: visible !important;
         }}
         .block-container {{
-            padding-top: 118px !important;
-            padding-bottom: 2.5rem !important;
+            padding-top: 8px !important;
+            padding-bottom: 3rem !important;
             max-width: 1460px;
         }}
 
-        /* SABİT ÜST KABUK (.st-key-fixed_header_shell) */
+        /* SABİT ÜST KABUK (Sayfa aşağı kaydırıldıkça tepede kalır, altta siyah boşluk bırakmaz) */
         .st-key-fixed_header_shell {{
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            width: 100% !important;
+            position: sticky !important;
+            top: 0px !important;
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
+            border: 1px solid {t['border']} !important;
             border-bottom: 2px solid {t['accent']} !important;
-            padding: 8px 2.2rem 4px 2.2rem !important;
+            border-radius: 0px 0px 10px 10px !important;
+            padding: 8px 14px 4px 14px !important;
+            margin-bottom: 14px !important;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14) !important;
         }}
 
