@@ -36,65 +36,65 @@ st.set_page_config(
 
 # --- 10 HAZIR ANTİK / LATİNCE İSİMLİ RENK PALETİ ---
 THEMES = {
+    "Pergamena (Baskın Krem & Parşömen)": {
+        "is_dark": False,
+        "shell_bg": "#4A3525", "shell_text": "#FFF8EB",
+        "bg_canvas": "#E6D7BE", "bg_card": "#F3E8D2",
+        "text_primary": "#24190E", "text_secondary": "#5C4938",
+        "accent": "#9A3412", "accent_text": "#FFFBEB",
+        "danger": "#B91C1C", "danger_bg": "rgba(185, 28, 28, 0.12)",
+        "success": "#15803D", "success_bg": "rgba(21, 128, 61, 0.13)",
+        "border": "#CBB694"
+    },
     "Nox Ardesia (Gece Arduvazı)": {
         "is_dark": True,
         "shell_bg": "#0F172A", "shell_text": "#F8FAFC",
         "bg_canvas": "#0B1120", "bg_card": "#131C31",
         "text_primary": "#F1F5F9", "text_secondary": "#94A3B8",
         "accent": "#3B82F6", "accent_text": "#FFFFFF",
-        "danger": "#F87171", "danger_bg": "rgba(248, 113, 113, 0.12)",
-        "success": "#34D399", "success_bg": "rgba(52, 211, 153, 0.12)",
+        "danger": "#F87171", "danger_bg": "rgba(248, 113, 113, 0.14)",
+        "success": "#34D399", "success_bg": "rgba(52, 211, 153, 0.14)",
         "border": "#24314D"
     },
-    "Pergamena (Antik Krem & Parşömen)": {
+    "Rosa Rubra (Baskın Gül & Fuşya)": {
         "is_dark": False,
-        "shell_bg": "#3E2F26", "shell_text": "#FDF8F0",
-        "bg_canvas": "#F3ECE0", "bg_card": "#FAF4E8",
-        "text_primary": "#292018", "text_secondary": "#6B5B4B",
-        "accent": "#9A3412", "accent_text": "#FFFBEB",
-        "danger": "#B91C1C", "danger_bg": "rgba(185, 28, 28, 0.09)",
-        "success": "#15803D", "success_bg": "rgba(21, 128, 61, 0.10)",
-        "border": "#DFD3C0"
+        "shell_bg": "#591343", "shell_text": "#FDF2F8",
+        "bg_canvas": "#EBC8DC", "bg_card": "#F7DFEC",
+        "text_primary": "#360D28", "text_secondary": "#6E3559",
+        "accent": "#BE185D", "accent_text": "#FFFFFF",
+        "danger": "#B91C1C", "danger_bg": "rgba(185, 28, 28, 0.12)",
+        "success": "#047857", "success_bg": "rgba(4, 120, 87, 0.13)",
+        "border": "#D49EBC"
     },
-    "Rosa Rubra (Pudra & Fuşya Kurumsal)": {
+    "Calx Calida (Baskın Kumtaşı & Terracotta)": {
         "is_dark": False,
-        "shell_bg": "#4A153B", "shell_text": "#FDF2F8",
-        "bg_canvas": "#F6E8F0", "bg_card": "#FCF3F8",
-        "text_primary": "#38122C", "text_secondary": "#704260",
-        "accent": "#BE185D", "accent_text": "#FDF2F8",
-        "danger": "#DC2626", "danger_bg": "rgba(220, 38, 38, 0.09)",
-        "success": "#047857", "success_bg": "rgba(4, 120, 87, 0.10)",
-        "border": "#E5C6D8"
+        "shell_bg": "#362C25", "shell_text": "#FAF6F0",
+        "bg_canvas": "#DFD4C3", "bg_card": "#EDE4D6",
+        "text_primary": "#1F1914", "text_secondary": "#54483D",
+        "accent": "#B45309", "accent_text": "#FFFFFF",
+        "danger": "#C2410C", "danger_bg": "rgba(194, 65, 12, 0.12)",
+        "success": "#15803D", "success_bg": "rgba(21, 128, 61, 0.13)",
+        "border": "#C2B39C"
     },
-    "Calx Calida (Sıcak Kireçtaşı & Kum)": {
+    "Chloros (Baskın Adaçayı & Yosun)": {
         "is_dark": False,
-        "shell_bg": "#292524", "shell_text": "#FAF8F5",
-        "bg_canvas": "#EFECE4", "bg_card": "#F7F4ED",
-        "text_primary": "#1C1917", "text_secondary": "#57534E",
-        "accent": "#B45309", "accent_text": "#FFFBEB",
-        "danger": "#C2410C", "danger_bg": "rgba(194, 65, 12, 0.09)",
-        "success": "#15803D", "success_bg": "rgba(21, 128, 61, 0.10)",
-        "border": "#DCD5C7"
+        "shell_bg": "#143327", "shell_text": "#ECFDF5",
+        "bg_canvas": "#CDE0D5", "bg_card": "#DFECE4",
+        "text_primary": "#10291F", "text_secondary": "#3D5C4E",
+        "accent": "#1B4332", "accent_text": "#FFFFFF",
+        "danger": "#B91C1C", "danger_bg": "rgba(185, 28, 28, 0.12)",
+        "success": "#15803D", "success_bg": "rgba(21, 128, 61, 0.13)",
+        "border": "#A5C4B3"
     },
-    "Chloros (Adaçayı & Keten Yeşili)": {
+    "Amethystus (Baskın Leylak & Lavanta)": {
         "is_dark": False,
-        "shell_bg": "#132A22", "shell_text": "#ECFDF5",
-        "bg_canvas": "#E6EFEA", "bg_card": "#F1F7F4",
-        "text_primary": "#142921", "text_secondary": "#4B6358",
-        "accent": "#1B4332", "accent_text": "#ECFDF5",
-        "danger": "#B91C1C", "danger_bg": "rgba(185, 28, 28, 0.09)",
-        "success": "#15803D", "success_bg": "rgba(21, 128, 61, 0.10)",
-        "border": "#C8D9D0"
-    },
-    "Amethystus (Yumuşak Leylak & Mürdüm)": {
-        "is_dark": False,
-        "shell_bg": "#2E1A47", "shell_text": "#F5F3FF",
-        "bg_canvas": "#EDE8F5", "bg_card": "#F6F3FB",
-        "text_primary": "#231438", "text_secondary": "#5B4B73",
-        "accent": "#7E22CE", "accent_text": "#FAF5FF",
-        "danger": "#BE123C", "danger_bg": "rgba(190, 18, 60, 0.09)",
-        "success": "#0D9488", "success_bg": "rgba(13, 148, 136, 0.10)",
-        "border": "#D6CCE6"
+        "shell_bg": "#331A54", "shell_text": "#F5F3FF",
+        "bg_canvas": "#D9CEEB", "bg_card": "#E8E0F5",
+        "text_primary": "#211038", "text_secondary": "#523D70",
+        "accent": "#7E22CE", "accent_text": "#FFFFFF",
+        "danger": "#BE123C", "danger_bg": "rgba(190, 18, 60, 0.12)",
+        "success": "#0D9488", "success_bg": "rgba(13, 148, 136, 0.13)",
+        "border": "#B8A6D6"
     },
     "Carbo Ferrum (Endüstriyel Karbon)": {
         "is_dark": True,
@@ -102,8 +102,8 @@ THEMES = {
         "bg_canvas": "#121316", "bg_card": "#1A1C20",
         "text_primary": "#E4E4E7", "text_secondary": "#A1A1AA",
         "accent": "#60A5FA", "accent_text": "#091322",
-        "danger": "#EF4444", "danger_bg": "rgba(239, 68, 68, 0.12)",
-        "success": "#10B981", "success_bg": "rgba(16, 185, 129, 0.12)",
+        "danger": "#EF4444", "danger_bg": "rgba(239, 68, 68, 0.14)",
+        "success": "#10B981", "success_bg": "rgba(16, 185, 129, 0.14)",
         "border": "#2A2E35"
     },
     "Pontus (Derin Okyanus)": {
@@ -112,8 +112,8 @@ THEMES = {
         "bg_canvas": "#0A1622", "bg_card": "#112233",
         "text_primary": "#E2E8F0", "text_secondary": "#8FA3B8",
         "accent": "#38BDF8", "accent_text": "#061826",
-        "danger": "#FB7185", "danger_bg": "rgba(251, 113, 133, 0.12)",
-        "success": "#2DD4BF", "success_bg": "rgba(45, 212, 191, 0.12)",
+        "danger": "#FB7185", "danger_bg": "rgba(251, 113, 133, 0.14)",
+        "success": "#2DD4BF", "success_bg": "rgba(45, 212, 191, 0.14)",
         "border": "#1E3852"
     },
     "Electrum (Obsidyen & Kehribar)": {
@@ -122,8 +122,8 @@ THEMES = {
         "bg_canvas": "#141210", "bg_card": "#1E1B18",
         "text_primary": "#F5F5F4", "text_secondary": "#A8A29E",
         "accent": "#D97706", "accent_text": "#FFFFFF",
-        "danger": "#F87171", "danger_bg": "rgba(248, 113, 113, 0.12)",
-        "success": "#4ADE80", "success_bg": "rgba(74, 222, 128, 0.12)",
+        "danger": "#F87171", "danger_bg": "rgba(248, 113, 113, 0.14)",
+        "success": "#4ADE80", "success_bg": "rgba(74, 222, 128, 0.14)",
         "border": "#332E29"
     },
     "Purpura Nox (Gece Fuşyası & Bordo)": {
@@ -133,7 +133,7 @@ THEMES = {
         "text_primary": "#FCE7F3", "text_secondary": "#C09BB2",
         "accent": "#EC4899", "accent_text": "#FFFFFF",
         "danger": "#FB7185", "danger_bg": "rgba(251, 113, 133, 0.14)",
-        "success": "#34D399", "success_bg": "rgba(52, 211, 153, 0.12)",
+        "success": "#34D399", "success_bg": "rgba(52, 211, 153, 0.14)",
         "border": "#3B1E32"
     },
 }
@@ -200,12 +200,73 @@ def inject_design_system(theme_name: str, font_name: str):
             color: var(--text-primary) !important;
         }}
 
-        /* Form Input ve Selectbox Kontrast Güvencesi */
-        input, textarea, select, [data-baseweb="select"] > div, [data-baseweb="input"] > div {{
-            background-color: {input_bg} !important;
-            color: {input_text} !important;
+        /* Form Input, Selectbox, Dosya Yükleyici ve Tüm Buton Kontrast Güvencesi */
+        input, textarea, select,
+        [data-baseweb="select"] > div,
+        [data-baseweb="input"] > div,
+        [data-baseweb="base-input"] {{
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
             border-color: var(--border) !important;
             border-radius: 6px !important;
+        }}
+        [data-baseweb="select"] span,
+        [data-baseweb="select"] div,
+        input::placeholder {{
+            color: var(--text-primary) !important;
+            -webkit-text-fill-color: var(--text-primary) !important;
+        }}
+
+        /* Dosya Yükleme Alanı (st.file_uploader) */
+        [data-testid="stFileUploader"] section,
+        [data-testid="stFileUploaderDropzone"] {{
+            background-color: var(--bg-canvas) !important;
+            border: 1px dashed var(--border) !important;
+            color: var(--text-primary) !important;
+            border-radius: 8px !important;
+        }}
+        [data-testid="stFileUploader"] section *,
+        [data-testid="stFileUploaderDropzone"] * {{
+            color: var(--text-primary) !important;
+        }}
+        [data-testid="stFileUploader"] button {{
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border) !important;
+        }}
+
+        /* İkincil Butonlar, İndirme Butonları, Popover ve Sayı +/- Butonları */
+        .stButton > button[kind="secondary"],
+        .stDownloadButton > button,
+        [data-testid="stPopover"] > button,
+        [data-testid="stNumberInput"] button {{
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+        }}
+        .stButton > button[kind="secondary"] *,
+        .stDownloadButton > button *,
+        [data-testid="stPopover"] > button *,
+        [data-testid="stNumberInput"] button * {{
+            color: var(--text-primary) !important;
+        }}
+        .stDownloadButton > button:hover,
+        [data-testid="stPopover"] > button:hover {{
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+        }}
+
+        /* Expander Başlığı ve İçeriği */
+        [data-testid="stExpander"] {{
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+        }}
+        [data-testid="stExpander"] summary,
+        [data-testid="stExpander"] summary * {{
+            color: var(--text-primary) !important;
         }}
 
         /* Kompakt, Tek Satırlık, Sayfayla Kayan Üst Başlık Şeridi */
@@ -1388,14 +1449,26 @@ with tab1:
             ])
             fig.update_layout(
                 template="none",
-                title=dict(text=f"{meta_obj['company_name']} — {yr_rule['year']} SKDM Maliyet Kıyaslaması (€)", font=dict(size=14)),
-                height=250,
-                margin=dict(l=16, r=16, t=40, b=16),
+                title=dict(
+                    text=f"{meta_obj['company_name']} — {yr_rule['year']} SKDM Maliyet Kıyaslaması (€)",
+                    font=dict(size=13.5, color=active_theme["text_primary"])
+                ),
+                height=265,
+                margin=dict(l=16, r=16, t=48, b=24),
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 font=dict(color=active_theme["text_primary"], family=selected_font_name),
-                xaxis=dict(showgrid=False, linecolor=active_theme["border"]),
-                yaxis=dict(showgrid=True, gridcolor="rgba(148,163,184,0.18)")
+                xaxis=dict(
+                    showgrid=False,
+                    linecolor=active_theme["border"],
+                    tickfont=dict(color=active_theme["text_primary"])
+                ),
+                yaxis=dict(
+                    showgrid=True,
+                    gridcolor=active_theme["border"],
+                    tickfont=dict(color=active_theme["text_secondary"])
+                )
+            )
             )
             st.plotly_chart(fig, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
