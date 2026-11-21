@@ -176,24 +176,21 @@ def inject_design_system(theme_name: str, font_name: str):
             --border: {t['border']};
         }}
 
-        /* Ham Streamlit kalıntılarını ve sidebar'ı gizle */
         #MainMenu, footer, header[data-testid="stHeader"] {{ display: none !important; }}
         .stDeployButton, [data-testid="stToolbar"], [data-testid="collapsedControl"] {{ display: none !important; }}
         section[data-testid="stSidebar"] {{ display: none !important; }}
 
-        /* Ana Sayfa Arka Planı (En alta kadar kesintisiz renk verir) */
         html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {{
             background-color: {t['bg_canvas']} !important;
             color: {t['text_primary']} !important;
             min-height: 100vh !important;
         }}
         .block-container {{
-            padding-top: 124px !important;
+            padding-top: 130px !important;
             padding-bottom: 3rem !important;
-            max-width: 1460px;
+            max-width: 1400px;
         }}
 
-        /* SABİT ÜST KABUK (Sayfa kaydırıldıkça tepede sabit kalır) */
         .st-key-fixed_header_shell {{
             position: fixed !important;
             top: 0px !important;
@@ -203,24 +200,22 @@ def inject_design_system(theme_name: str, font_name: str):
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
             border: none !important;
-            border-bottom: 2px solid {t['accent']} !important;
+            border-bottom: 1px solid color-mix(in srgb, {t['border']} 50%, transparent) !important;
             border-radius: 0px !important;
-            padding: 8px 2.2rem 6px 2.2rem !important;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14) !important;
+            padding: 10px 2.2rem 8px 2.2rem !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
         }}
 
-        /* YATAY SEKME NAVİGASYONU (st.radio -> sekme görünümü) */
         .st-key-fixed_header_shell [data-testid="stRadio"] > div {{
             flex-direction: row !important;
             flex-wrap: wrap !important;
-            gap: 4px !important;
+            gap: 6px !important;
             background-color: {t['bg_card']} !important;
-            border: 1px solid {t['border']} !important;
-            border-radius: 8px !important;
-            padding: 3px 8px !important;
-            margin-top: 4px !important;
+            border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent) !important;
+            border-radius: 10px !important;
+            padding: 4px 8px !important;
+            margin-top: 6px !important;
         }}
-        /* Radio yuvarlak noktalarını tamamen gizle */
         .st-key-fixed_header_shell [data-testid="stRadio"] label > div:first-child,
         .st-key-fixed_header_shell [data-testid="stRadio"] input[type="radio"] {{
             display: none !important;
@@ -228,24 +223,24 @@ def inject_design_system(theme_name: str, font_name: str):
         .st-key-fixed_header_shell [data-testid="stRadio"] label {{
             padding: 6px 14px !important;
             margin: 0 !important;
-            border-radius: 6px !important;
-            border-bottom: 3px solid transparent !important;
+            border-radius: 8px !important;
             cursor: pointer !important;
+            transition: all 0.15s ease !important;
         }}
         .st-key-fixed_header_shell [data-testid="stRadio"] label p {{
             color: {t['text_secondary']} !important;
-            font-weight: 600 !important;
+            font-weight: 500 !important;
             font-size: 0.85rem !important;
         }}
-        /* Seçili Sekme */
         .st-key-fixed_header_shell [data-testid="stRadio"] label:has(input:checked) {{
             background-color: {t['bg_canvas']} !important;
-            border-bottom: 3px solid {t['accent']} !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
         }}
         .st-key-fixed_header_shell [data-testid="stRadio"] label:has(input:checked) p {{
-            color: {t['accent']} !important;
+            color: {t['text_primary']} !important;
+            font-weight: 600 !important;
         }}
-        /* YAZI TİPİ VE RENK GÜVENCESİ (İkon span'larına dokunmaz, expand_more hatasını bitirir!) */
+
         .stApp p, .stApp label, .stApp input, .stApp textarea, .stApp select,
         .stApp h1, .stApp h2, .stApp h3, .stApp h4,
         [data-testid="stMarkdownContainer"] p,
@@ -257,7 +252,6 @@ def inject_design_system(theme_name: str, font_name: str):
             font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif !important;
         }}
 
-        /* Tüm Material İkon Fontlarını Koru */
         [data-testid="stIconMaterial"],
         .material-symbols-rounded,
         .material-icons,
@@ -267,7 +261,6 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['text_primary']} !important;
         }}
 
-        /* Form Input, Selectbox ve Sağ Ok Alanı */
         input, textarea, select,
         [data-baseweb="select"] > div,
         [data-baseweb="select"] > div > div,
@@ -275,8 +268,8 @@ def inject_design_system(theme_name: str, font_name: str):
         [data-baseweb="base-input"] {{
             background-color: {t['bg_card']} !important;
             color: {t['text_primary']} !important;
-            border-color: {t['border']} !important;
-            border-radius: 6px !important;
+            border-color: color-mix(in srgb, {t['border']} 60%, transparent) !important;
+            border-radius: 8px !important;
         }}
         [data-baseweb="select"] span:not([data-testid="stIconMaterial"]),
         [data-baseweb="select"] div,
@@ -289,7 +282,6 @@ def inject_design_system(theme_name: str, font_name: str):
             fill: {t['text_primary']} !important;
         }}
 
-        /* Açılır Popover Pencereleri & Dropdown Listeleri */
         [data-testid="stPopoverBody"],
         [data-testid="stPopoverBody"] > div,
         div[data-baseweb="popover"],
@@ -298,7 +290,8 @@ def inject_design_system(theme_name: str, font_name: str):
         li[role="option"] {{
             background-color: {t['bg_card']} !important;
             color: {t['text_primary']} !important;
-            border: 1px solid {t['border']} !important;
+            border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent) !important;
+            border-radius: 10px !important;
         }}
         [data-testid="stPopoverBody"] p,
         [data-testid="stPopoverBody"] label,
@@ -311,11 +304,10 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['accent']} !important;
         }}
 
-        /* Popover ve Uyarı Kutularında (st.success / st.warning / st.error) Okunaklı Kontrast */
         [data-testid="stPopoverBody"] [data-testid="stAlert"],
         [data-testid="stPopoverBody"] [data-testid="stAlert"] > div {{
             background-color: {t['bg_canvas']} !important;
-            border: 1px solid {t['border']} !important;
+            border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent) !important;
             color: {t['text_primary']} !important;
         }}
         [data-testid="stPopoverBody"] [data-testid="stAlert"] p,
@@ -325,7 +317,6 @@ def inject_design_system(theme_name: str, font_name: str):
             -webkit-text-fill-color: {t['text_primary']} !important;
         }}
 
-        /* Popover Butonları (🎨 Görünüm, 🔔 0, ⚙️ Dönem & ETS), İndirme ve +/- Butonları */
         .stButton > button[kind="secondary"],
         .stDownloadButton > button,
         [data-testid="stPopover"] button,
@@ -333,9 +324,10 @@ def inject_design_system(theme_name: str, font_name: str):
         [data-testid="stNumberInput"] button {{
             background-color: {t['bg_card']} !important;
             color: {t['text_primary']} !important;
-            border: 1px solid {t['border']} !important;
-            border-radius: 6px !important;
-            font-weight: 600 !important;
+            border: 1px solid color-mix(in srgb, {t['border']} 55%, transparent) !important;
+            border-radius: 8px !important;
+            font-weight: 500 !important;
+            transition: all 0.15s ease !important;
         }}
         .stDownloadButton > button p,
         [data-testid="stPopover"] button p,
@@ -347,14 +339,14 @@ def inject_design_system(theme_name: str, font_name: str):
         [data-testid="stPopover"] button:hover,
         [data-testid="stPopoverButton"]:hover {{
             border-color: {t['accent']} !important;
+            transform: translateY(-1px);
         }}
 
-        /* Dosya Yükleme Alanı */
         [data-testid="stFileUploader"] section,
         [data-testid="stFileUploaderDropzone"] {{
-            background-color: {t['bg_canvas']} !important;
-            border: 1px dashed {t['border']} !important;
-            border-radius: 8px !important;
+            background-color: {t['bg_card']} !important;
+            border: 1px dashed color-mix(in srgb, {t['border']} 70%, transparent) !important;
+            border-radius: 10px !important;
         }}
         [data-testid="stFileUploaderDropzoneInstructions"] span,
         [data-testid="stFileUploaderDropzoneInstructions"] small {{
@@ -362,18 +354,17 @@ def inject_design_system(theme_name: str, font_name: str):
             font-family: '{font_name}', sans-serif !important;
         }}
         [data-testid="stFileUploader"] button {{
-            background-color: {t['bg_card']} !important;
+            background-color: {t['bg_canvas']} !important;
             color: {t['text_primary']} !important;
-            border: 1px solid {t['border']} !important;
+            border: 1px solid color-mix(in srgb, {t['border']} 55%, transparent) !important;
         }}
 
-        /* Expander Başlığı ve İçeriği */
         [data-testid="stExpander"],
         [data-testid="stExpander"] details,
         [data-testid="stExpander"] summary {{
             background-color: {t['bg_card']} !important;
-            border: 1px solid {t['border']} !important;
-            border-radius: 8px !important;
+            border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent) !important;
+            border-radius: 10px !important;
         }}
         [data-testid="stExpander"] summary p {{
             color: {t['text_primary']} !important;
@@ -382,24 +373,22 @@ def inject_design_system(theme_name: str, font_name: str):
         }}
         [data-testid="stForm"] {{
             background-color: {t['bg_card']} !important;
-            border: 1px solid {t['border']} !important;
-            border-radius: 8px !important;
-            padding: 14px !important;
+            border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent) !important;
+            border-radius: 12px !important;
+            padding: 18px !important;
         }}
 
-        /* Kompakt Üst Başlık Kutusu */
         .compact-topbar {{
             background-color: {t['bg_card']};
-            border: 1px solid {t['border']};
-            border-left: 4px solid {t['accent']};
-            border-radius: 8px;
-            padding: 6px 14px;
+            border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent);
+            border-radius: 10px;
+            padding: 8px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 8px;
-            min-height: 40px;
+            min-height: 42px;
         }}
         .topbar-left {{
             display: flex;
@@ -409,13 +398,14 @@ def inject_design_system(theme_name: str, font_name: str):
         }}
         .brand-mark {{
             font-weight: 700;
-            font-size: 1.02rem;
+            font-size: 1.05rem;
+            letter-spacing: -0.02em;
             color: {t['text_primary']} !important;
             font-family: '{font_name}', sans-serif !important;
         }}
         .topbar-sep {{
             color: {t['text_secondary']} !important;
-            opacity: 0.45;
+            opacity: 0.4;
         }}
         .topbar-desc {{
             font-size: 0.84rem;
@@ -426,41 +416,35 @@ def inject_design_system(theme_name: str, font_name: str):
         .compliance-pill {{
             background-color: {t['success_bg']} !important;
             color: {t['success']} !important;
-            border: 1px solid {t['success']} !important;
             border-radius: 999px;
-            padding: 2px 10px;
+            padding: 3px 10px;
             font-size: 0.72rem;
             font-weight: 600;
             font-family: '{font_name}', sans-serif !important;
         }}
 
-        /* Modüler KPI Kartları */
         .data-card {{
             background-color: {t['bg_card']};
-            border: 1px solid {t['border']};
-            border-radius: 8px;
-            padding: 16px 18px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent);
+            border-radius: 12px;
+            padding: 20px 22px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            transition: border-color 0.15s ease;
             height: 100%;
         }}
-        .card-danger {{
-            border-top: 3px solid {t['danger']};
-            background: linear-gradient(180deg, {t['danger_bg']} 0%, {t['bg_card']} 50%);
+        .data-card:hover {{
+            border-color: {t['accent']};
         }}
-        .card-neutral {{
-            border-top: 3px solid {t['accent']};
-        }}
-        .card-success {{
-            border-top: 3px solid {t['success']};
-            background: linear-gradient(180deg, {t['success_bg']} 0%, {t['bg_card']} 60%);
+        .card-danger, .card-neutral, .card-success {{
+            border-top: 1px solid color-mix(in srgb, {t['border']} 50%, transparent);
+            background: {t['bg_card']};
         }}
         .card-title {{
             font-size: 0.76rem;
-            font-weight: 600;
+            font-weight: 500;
             color: {t['text_secondary']} !important;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 8px;
+            letter-spacing: 0.01em;
+            margin-bottom: 10px;
         }}
         .card-row {{
             display: flex;
@@ -471,24 +455,24 @@ def inject_design_system(theme_name: str, font_name: str):
         .card-kpi {{
             font-family: 'JetBrains Mono', monospace !important;
             font-variant-numeric: tabular-nums !important;
-            font-size: 1.65rem;
-            font-weight: 700;
-            line-height: 1.15;
+            font-size: 1.72rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
         }}
         .card-badge {{
             font-size: 0.72rem;
             font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 5px;
+            padding: 3px 9px;
+            border-radius: 6px;
             white-space: nowrap;
         }}
         .card-note {{
             font-size: 0.76rem;
             color: {t['text_secondary']} !important;
-            margin-top: 7px;
+            margin-top: 9px;
         }}
 
-        /* Birincil Butonlar */
         .stButton > button[kind="primary"],
         .stFormSubmitButton > button,
         .stButton > button[kind="primary"] p,
@@ -497,7 +481,8 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['accent_text']} !important;
             border: none !important;
             font-weight: 600 !important;
-            border-radius: 6px !important;
+            border-radius: 8px !important;
+            padding: 0.45rem 1rem !important;
         }}
     </style>
     """, unsafe_allow_html=True)
