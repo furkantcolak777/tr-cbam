@@ -29,12 +29,12 @@ except Exception:
 
 # --- SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="TR-CBAM v6.0 | Kurumsal AB SKDM Uyum & İhracat Koruma Platformu",
+    page_title="TR-CBAM v7.0 | Kurumsal AB SKDM Uyum & İhracat Koruma Platformu",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- KURUMSAL SAAS ARAYÜZ GİYDİRMESİ (CUSTOM CSS) ---
+# --- KOYU KURUMSAL SAAS ARAYÜZ GİYDİRMESİ (DARK MODE UYUMLU CSS) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -82,17 +82,30 @@ st.markdown("""
     }
     .hero-banner h1 {
         margin: 0;
-        font-size: 1.55rem;
+        font-size: 1.52rem;
         font-weight: 700;
         color: #ffffff;
     }
     .hero-banner p {
         margin: 6px 0 0 0;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         color: #cbd5e1;
     }
 </style>
 """, unsafe_allow_html=True)
+
+# --- LİSANS ANAHTARI DOĞRULAMA (PAYWALL KİLİDİ) ---
+VALID_LICENSE_PREFIXES = ("TRCBAM-PRO-", "TRCBAM-ENT-", "TRCBAM-OSB-")
+
+def check_license_active(key_str: str) -> tuple[bool, str]:
+    k = (key_str or "").strip().upper()
+    if k.startswith("TRCBAM-ENT-"):
+        return True, "Kurumsal (Enterprise) Aktif Lisans"
+    if k.startswith("TRCBAM-OSB-"):
+        return True, "OSB / İhracatçı Birliği Aktif Lisansı"
+    if k.startswith("TRCBAM-PRO-") and len(k) >= 15:
+        return True, "KOBİ İhracatçı Pro Aktif Lisansı"
+    return False, "Ücretsiz Ön-Analiz Modu (Filigranlı Önizleme)"
 
 # --- SABİT MEVZUAT KATSAYILARI ((EU) 2025/2547 Ek II Bölüm G & ETKB) ---
 FUEL_FACTORS = {
@@ -174,9 +187,7 @@ def evaluate_thermodynamic_percentile(sector, route_tag, elec_mwh_t, fuel_gj_t):
             over = min(9, int(round(((val - p90) / max(p90, 1e-6)) * 20)))
             return min(99, 90 + max(1, over))
 
-    elec_pct = calc_pct(elec_mwh_t, bm["elec_p10"], bm["elec_p50"], bm["elec_p90"])
-    fuel_pct = calc_pct(fuel_gj_t, bm["fuel_p10"], bm["fuel_p50"], bm["fuel_p90"])
-    return bm, elec_pct, fuel_pct
+    return bm, calc_pct(elec_mwh_t, bm["elec_p10"], bm["elec_p50"], bm["elec_p90"]), calc_pct(fuel_gj_t, bm["fuel_p10"], bm["fuel_p50"], bm["fuel_p90"])
 
 # --- ZERO-KNOWLEDGE AES-256 ŞİFRELİ KASA (.cbamvault) ---
 def _derive_key(passphrase: str, salt: bytes) -> bytes:
@@ -424,7 +435,7 @@ def run_verifier_audit_matrix(
     return findings, readiness_score, crit_count, warn_count, pass_count, bm_thermo, elec_pct, fuel_pct
 
 # --- HESAPLAMA MOTORU ---
-def calculate_cbam_v6(
+def calculate_cbam_v7(
     cn_code, route_tag, eu_tonnage, total_prod_ton,
     fuels_dict, process_em_ton, elec_kwh, grid_ef,
     precursors_list, func_ratio,
@@ -539,7 +550,7 @@ def calculate_cbam_v6(
         "is_de_minimis_candidate": (eu_tonnage < 50.0) and (cn_code != "28041000"),
     }
 
-# --- AB KOMİSYONU RESMİ COMMUNICATION TEMPLATE EXCEL ÜRETİCİSİ (VERIFIER UYUMLU) ---
+# --- AB KOMİSYONU RESMİ COMMUNICATION TEMPLATE EXCEL ÜRETİCİSİ ---
 def generate_eu_communication_template_xlsx(meta, res):
     wb = openpyxl.Workbook()
     header_fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
@@ -552,7 +563,6 @@ def generate_eu_communication_template_xlsx(meta, res):
         top=Side(style="thin", color="CBD5E1"), bottom=Side(style="thin", color="CBD5E1")
     )
 
-    # Sekme 1: Summary_Communication
     ws1 = wb.active
     ws1.title = "Summary_Communication"
     ws1.merge_cells("A1:D1")
@@ -597,7 +607,6 @@ def generate_eu_communication_template_xlsx(meta, res):
     for col_letter, width in [("A", 42), ("B", 32), ("C", 42), ("D", 32)]:
         ws1.column_dimensions[col_letter].width = width
 
-    # Sekme 2: Precursors_&_Routes
     ws2 = wb.create_sheet("Precursors_&_Routes")
     headers_s2 = ["Precursor CN Code", "Specific Mass m_i (t/t)", "Origin / Status", "Precursor SEE_i (tCO2e/t)", "Precursor SEFA_i (tCO2e/t)"]
     for c_i, h in enumerate(headers_s2, start=1):
@@ -618,6 +627,14 @@ def generate_eu_communication_template_xlsx(meta, res):
     return out.getvalue()
 
 # --- AB ALICISINA ÖZEL İNGİLİZCE SİPARİŞ & MARJ KORUMA TEKLİF PDF'İ ---
+def setup_unicode_font(pdf):
+    if os.path.exists("DejaVuSans.ttf"):
+        pdf.add_font("TrFont", "", "DejaVuSans.ttf")
+        pdf.add_font("TrFont", "B", "DejaVuSans-Bold.ttf" if os.path.exists("DejaVuSans-Bold.ttf") else "DejaVuSans.ttf")
+        pdf.add_font("TrFont", "I", "DejaVuSans-Oblique.ttf" if os.path.exists("DejaVuSans-Oblique.ttf") else "DejaVuSans.ttf")
+        return "TrFont"
+    return "Helvetica"
+
 def generate_eu_buyer_pitch_pdf(meta, res, buyer_company="EU Importer / Customer GmbH"):
     pdf = FPDF()
     pdf.add_page()
@@ -674,7 +691,7 @@ def generate_eu_buyer_pitch_pdf(meta, res, buyer_company="EU Importer / Customer
     return bytes(pdf.output())
 
 # --- O3CI v3.2 XML ÜRETİCİ ---
-def generate_cbam_xml_v6(meta, results_list):
+def generate_cbam_xml_v7(meta, results_list):
     root = ET.Element("CBAMDefinitiveDeclaration", xmlns="urn:eu:taxud:cbam:o3ci:v3.2")
     header = ET.SubElement(root, "DeclarationHeader")
     ET.SubElement(header, "ReportingYear").text = str(meta["year"])
@@ -712,19 +729,19 @@ def generate_cbam_xml_v6(meta, results_list):
     reparsed = minidom.parseString(ET.tostring(root, "utf-8"))
     return reparsed.toprettyxml(indent="  ").encode("utf-8")
 
-# --- KURUMSAL TÜRKÇE PRE-AUDIT PDF ÜRETİCİ ---
-def setup_unicode_font(pdf):
-    if os.path.exists("DejaVuSans.ttf"):
-        pdf.add_font("TrFont", "", "DejaVuSans.ttf")
-        pdf.add_font("TrFont", "B", "DejaVuSans-Bold.ttf" if os.path.exists("DejaVuSans-Bold.ttf") else "DejaVuSans.ttf")
-        pdf.add_font("TrFont", "I", "DejaVuSans-Oblique.ttf" if os.path.exists("DejaVuSans-Oblique.ttf") else "DejaVuSans.ttf")
-        return "TrFont"
-    return "Helvetica"
-
-def generate_corporate_pdf_v6(meta, res, audit_summary, logo_bytes=None):
+# --- KURUMSAL TÜRKÇE PRE-AUDIT PDF ÜRETİCİ (FİLİGRAN DESTEKLİ) ---
+def generate_corporate_pdf_v7(meta, res, audit_summary, is_licensed=False, logo_bytes=None):
     pdf = FPDF()
     pdf.add_page()
     font_name = setup_unicode_font(pdf)
+
+    # Ücretsiz Ön-Analiz Moduysa Üst Uyarı Şeridi (Paywall Koruması)
+    if not is_licensed:
+        pdf.set_fill_color(254, 226, 226)
+        pdf.set_text_color(185, 28, 28)
+        pdf.set_font(font_name, "B", 8.2)
+        pdf.cell(0, 7, "TASLAK ÖN-ANALİZ ÇIKTISI — RESMİ BEYAN VE ALICI TEKLİFİ İÇİN GEÇERSİZDİR (LİSANS GEREKLİDİR)", ln=True, align="C", fill=True)
+        pdf.ln(2)
 
     temp_logo = None
     if logo_bytes:
@@ -733,17 +750,15 @@ def generate_corporate_pdf_v6(meta, res, audit_summary, logo_bytes=None):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
                 img.save(tmp.name, format="PNG")
                 temp_logo = tmp.name
-            pdf.image(temp_logo, x=12, y=10, w=24)
-            pdf.set_xy(38, 12)
+            pdf.image(temp_logo, x=12, y=18 if not is_licensed else 10, w=24)
+            pdf.set_xy(38, 20 if not is_licensed else 12)
         except Exception:
-            pdf.set_xy(10, 12)
-    else:
-        pdf.set_xy(10, 12)
+            pass
 
     pdf.set_fill_color(15, 23, 42)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font(font_name, "B", 10.6)
-    pdf.cell(0, 10.5, "TR-CBAM v6.0 | AB SKDM KESİN DÖNEM DENETİM ÖNCESİ RAPORU", ln=True, align="C", fill=True)
+    pdf.cell(0, 10.5, "TR-CBAM v7.0 | AB SKDM KESİN DÖNEM DENETİM ÖNCESİ RAPORU", ln=True, align="C", fill=True)
 
     pdf.set_text_color(80, 80, 80)
     pdf.set_font(font_name, "", 7.8)
@@ -837,9 +852,16 @@ vd = st.session_state["vault_data"]
 
 # --- YAN MENÜ ---
 with st.sidebar:
-    st.header("🔐 Zero-Knowledge Şifreli Kasa")
-    st.caption("Tesis verileriniz sunucuda tutulmaz; kendi parolanızla **AES-256** şifrelenerek bilgisayarınızda saklanır.")
+    st.header("🔑 Kurumsal Lisans & Yetki")
+    license_key = st.text_input("Lisans Anahtarı", type="password", value="", placeholder="TRCBAM-PRO-XXXX")
+    is_licensed, license_label = check_license_active(license_key)
+    if is_licensed:
+        st.success(f"✅ {license_label}")
+    else:
+        st.info(f"ℹ️ {license_label}")
 
+    st.divider()
+    st.header("🔐 Zero-Knowledge Şifreli Kasa")
     vault_pass = st.text_input("Tesis Kasa Parolası (Passphrase)", type="password", value="")
     uploaded_vault = st.file_uploader("Kayıtlı Kasa Yükle (.cbamvault)", type=["cbamvault"])
     if uploaded_vault and vault_pass:
@@ -879,27 +901,34 @@ with st.sidebar:
 # --- KURUMSAL HERO BANNER ---
 st.markdown("""
 <div class="hero-banner">
-    <h1>TR-CBAM v6.0 | Kurumsal AB SKDM Uyum, Denetim & İhracat Koruma Kokpiti</h1>
-    <p>570 Resmi CN Kodu ((EU) 2026/1740) • Türkiye Termodinamik Kıyas Motoru • AB Resmi İletişim Şablonu (.xlsx) • AB Alıcı Teklif PDF'i</p>
+    <h1>TR-CBAM v7.0 | Kurumsal AB SKDM Uyum, Denetim & İhracat Koruma Kokpiti</h1>
+    <p>2 Dakikalık KOBİ Hızlı Modu • 570 Resmi CN Kodu ((EU) 2026/1740) • Türkiye Termodinamik Kıyas • AB Resmi İletişim Şablonu (.xlsx)</p>
 </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🏭 Sevkiyat & Termodinamik Denetim",
-    "🔌 Logo / Mikro / SAP Veri Aktarımı",
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "🏭 Sevkiyat & Denetim Kokpiti",
+    "📨 Gümrük Müşaviri Davet Modülü",
+    "🔌 Logo / Mikro / SAP Aktarımı",
     "🤝 Tedarikçi (Precursor) Portalı",
     "📊 Çoklu Sevkiyat & Kümülatif 50t",
-    "📚 Resmi Katalog (570 CN Kodu)"
+    "📚 Resmi Katalog (570 CN)"
 ])
 
 # ==============================================================================
-# SEKME 1: TEKİL SEVKİYAT + TERMODİNAMİK PERSENTİL + AB ALICI TEKLİF PDF + VERIFIER XLSX
+# SEKME 1: KOBİ HIZLI MODU + DETAYLI MÜHENDİSLİK MODU + LİSANS KİLİDİ
 # ==============================================================================
 with tab1:
     col_left, col_right = st.columns([1.2, 1])
 
     with col_left:
-        st.subheader("1. Ürün, Üretim Rotası ve Tesis Girdileri")
+        ui_mode = st.radio(
+            "Çalışma Modu Seçin",
+            ["⚡ KOBİ Hızlı Modu (2 Dakika — Sadece 4 Temel Veri)", "🔬 Detaylı Mühendislik Modu (Çevre Mühendisi & Verifier)"],
+            horizontal=True
+        )
+        is_quick_mode = ui_mode.startswith("⚡")
+
         search_q = st.text_input("🔍 GTİP / CN Kodu veya Ürün Adı Ara (Örn: 7208, 7318, 7604, 2523, 3102)", value="")
         filtered_cns = [
             cn for cn, info in CATALOG.items()
@@ -908,7 +937,7 @@ with tab1:
 
         default_idx = filtered_cns.index(vd["selected_cn"]) if vd["selected_cn"] in filtered_cns else 0
         selected_cn = st.selectbox(
-            f"CN / GTİP Kodu Seçin ({len(filtered_cns)} sonuç)",
+            f"1. CN / GTİP Kodu Seçin ({len(filtered_cns)} sonuç)",
             filtered_cns,
             index=default_idx,
             format_func=lambda x: f"{format_cn(x)} | [{CATALOG[x]['s']}] {CATALOG[x]['d'][:72]}"
@@ -916,18 +945,22 @@ with tab1:
         sel_item = CATALOG[selected_cn]
 
         avail_routes = extract_routes_for_item(sel_item)
-        default_route_idx = avail_routes.index(vd["selected_route"]) if vd["selected_route"] in avail_routes else (
-            avail_routes.index("(E)") if sel_item["s"] == "Demir-Çelik" and "(E)" in avail_routes else (
-                avail_routes.index("(L)") if sel_item["s"] == "Alüminyum" and "(L)" in avail_routes else 0
-            )
+        default_route = "(E)" if sel_item["s"] == "Demir-Çelik" and "(E)" in avail_routes else (
+            "(L)" if sel_item["s"] == "Alüminyum" and "(L)" in avail_routes else avail_routes[0]
         )
-        selected_route = st.selectbox("Üretim Rotası ((EU) 2025/2620 Ek Bölüm 5.3)", avail_routes, index=default_route_idx, format_func=lambda r: ROUTE_LABELS.get(r, r))
 
-        func_ratio = 1.0
-        if sel_item["s"] == "Çimento" and not selected_cn.startswith("252310"):
-            func_ratio = st.slider("Çimento İçindeki Klinker Oranı (%)", 10, 100, 75) / 100.0
-        elif sel_item["s"] == "Gübre":
-            func_ratio = st.slider("Gübre Azot (N) İçeriği (%)", 5, 82, 27) / 100.0
+        if is_quick_mode:
+            selected_route = default_route
+            func_ratio = 0.75 if sel_item["s"] == "Çimento" and not selected_cn.startswith("252310") else (0.27 if sel_item["s"] == "Gübre" else 1.0)
+            st.caption(f"⚙️ Otomatik Sektör Parametreleri: Rota `{ROUTE_LABELS.get(selected_route, selected_route)}` | AB Şebeke Faktörü `{EU_DEFAULT_TR_GRID_EF} tCO₂e/MWh`")
+        else:
+            default_route_idx = avail_routes.index(vd["selected_route"]) if vd["selected_route"] in avail_routes else avail_routes.index(default_route)
+            selected_route = st.selectbox("Üretim Rotası ((EU) 2025/2620 Ek Bölüm 5.3)", avail_routes, index=default_route_idx, format_func=lambda r: ROUTE_LABELS.get(r, r))
+            func_ratio = 1.0
+            if sel_item["s"] == "Çimento" and not selected_cn.startswith("252310"):
+                func_ratio = st.slider("Çimento İçindeki Klinker Oranı (%)", 10, 100, 75) / 100.0
+            elif sel_item["s"] == "Gübre":
+                func_ratio = st.slider("Gübre Azot (N) İçeriği (%)", 5, 82, 27) / 100.0
 
         invoice_file = st.file_uploader("Opsiyonel: Enerji Faturası Yükle (PDF / JPG / PNG - Otomatik Okuma)", type=["pdf", "png", "jpg", "jpeg"])
         auto_kwh, auto_gas = float(vd["elec_kwh"]), float(vd["q_gas"])
@@ -942,57 +975,74 @@ with tab1:
                 auto_gas = dg
                 st.success(f"Faturadan otomatik doğalgaz okundu: **{dg:,.2f} m³**")
 
-        with st.form("v6_main_form"):
+        with st.form("v7_main_form"):
             c_name1, c_name2 = st.columns(2)
             company_name = c_name1.text_input("İhracatçı Tesis Unvanı (TR)", value=vd["company_name"])
-            buyer_company = c_name2.text_input("AB İthalatçı / Alıcı Firma (Teklif PDF'i İçin)", value=vd.get("buyer_company", "Muster Stahlhandel GmbH (DE)"))
+            buyer_company = c_name2.text_input("AB İthalatçı / Alıcı Firma", value=vd.get("buyer_company", "Muster Stahlhandel GmbH (DE)"))
 
-            p1, p2 = st.columns(2)
-            total_prod_ton = p1.number_input("Tesis Dönemlik Toplam Üretimi (Ton)", min_value=1.0, value=float(vd["total_prod_ton"]), step=50.0)
-            eu_tonnage = p2.number_input("AB İhracat Sevkiyatı (Ton)", min_value=0.1, value=float(vd["eu_tonnage"]), step=10.0)
+            if is_quick_mode:
+                q1, q2, q3 = st.columns(3)
+                eu_tonnage = q1.number_input("2. AB Sevkiyat Tonajı (Ton)", min_value=0.1, value=float(vd["eu_tonnage"]), step=10.0)
+                elec_kwh = q2.number_input("3. Dönemlik Elektrik (kWh)", min_value=0.0, value=float(auto_kwh), step=1000.0)
+                q_gas = q3.number_input("4. Dönemlik Doğalgaz (m³)", min_value=0.0, value=float(auto_gas), step=500.0)
 
-            st.markdown("**🔥 Yakıt Tüketimleri & Proses Emisyonları (Dönemlik Tesis Toplamı)**")
-            f1, f2, f3 = st.columns(3)
-            q_gas = f1.number_input("Doğalgaz (m³)", min_value=0.0, value=float(auto_gas), step=500.0)
-            q_coal = f2.number_input("Taş Kömürü (Ton)", min_value=0.0, value=0.0, step=1.0)
-            q_coke = f3.number_input("Kok Kömürü (Ton)", min_value=0.0, value=0.0, step=1.0)
+                total_prod_ton = max(eu_tonnage, float(vd["total_prod_ton"]))
+                q_coal = q_coke = q_lignite = q_fueloil = q_lpg = process_em_ton = 0.0
+                has_ppa = False
+                active_grid_ef = EU_DEFAULT_TR_GRID_EF
+                prec_cn = "72071114" if sel_item["s"] == "Demir-Çelik" else ("76011090" if sel_item["s"] == "Alüminyum" else selected_cn)
+                prec_mi = 1.05 if sel_item["s"] in ["Demir-Çelik", "Alüminyum"] else 0.0
+                prec_origin = "Türkiye / Diğer Üçüncü Ülke"
+                prec_verified = False
+                prec_actual_see = 0.45
+                prec_route = selected_route
+            else:
+                p1, p2 = st.columns(2)
+                total_prod_ton = p1.number_input("Tesis Dönemlik Toplam Üretimi (Ton)", min_value=1.0, value=float(vd["total_prod_ton"]), step=50.0)
+                eu_tonnage = p2.number_input("AB İhracat Sevkiyatı (Ton)", min_value=0.1, value=float(vd["eu_tonnage"]), step=10.0)
 
-            f4, f5, f6 = st.columns(3)
-            q_lignite = f4.number_input("Linyit (Ton)", min_value=0.0, value=0.0, step=1.0)
-            q_fueloil = f5.number_input("Fuel-Oil (Ton)", min_value=0.0, value=0.0, step=1.0)
-            q_lpg = f6.number_input("LPG (Ton)", min_value=0.0, value=0.0, step=1.0)
+                st.markdown("**🔥 Yakıt Tüketimleri & Proses Emisyonları**")
+                f1, f2, f3 = st.columns(3)
+                q_gas = f1.number_input("Doğalgaz (m³)", min_value=0.0, value=float(auto_gas), step=500.0)
+                q_coal = f2.number_input("Taş Kömürü (Ton)", min_value=0.0, value=0.0, step=1.0)
+                q_coke = f3.number_input("Kok Kömürü (Ton)", min_value=0.0, value=0.0, step=1.0)
 
-            process_em_ton = st.number_input("Doğrudan Proses Emisyonları (tCO₂e — Kalsinasyon, EAF Elektrot vb.)", min_value=0.0, value=0.0, step=5.0)
+                f4, f5, f6 = st.columns(3)
+                q_lignite = f4.number_input("Linyit (Ton)", min_value=0.0, value=0.0, step=1.0)
+                q_fueloil = f5.number_input("Fuel-Oil (Ton)", min_value=0.0, value=0.0, step=1.0)
+                q_lpg = f6.number_input("LPG (Ton)", min_value=0.0, value=0.0, step=1.0)
 
-            st.markdown("**⚡ Elektrik Tüketimi & Şebeke Kuralı ((EU) 2025/2547 Ek II D.4)**")
-            e1, e2 = st.columns([1, 1.3])
-            elec_kwh = e1.number_input("Tesis Elektrik Tüketimi (kWh)", min_value=0.0, value=float(auto_kwh), step=1000.0)
-            has_ppa = e2.checkbox("Fiziksel PPA veya Doğrudan Teknik Bağlantı + Saatlik Sayaç Kanıtlı", value=False)
-            active_grid_ef = PPA_GRID_OPTIONS[st.selectbox("Kanıtlı Elektrik Faktörü", list(PPA_GRID_OPTIONS.keys()))] if has_ppa else EU_DEFAULT_TR_GRID_EF
+                process_em_ton = st.number_input("Doğrudan Proses Emisyonları (tCO₂e — Kalsinasyon, EAF Elektrot vb.)", min_value=0.0, value=0.0, step=5.0)
 
-            st.markdown("**🧱 Öncül Hammadde (Precursor) Girdileri — Complex Goods**")
-            p_col1, p_col2, p_col3 = st.columns(3)
-            prec_cn_idx = list(CATALOG.keys()).index(vd["prec_cn"]) if vd["prec_cn"] in CATALOG else 0
-            prec_cn = p_col1.selectbox("Öncül Hammadde CN", list(CATALOG.keys()), index=prec_cn_idx, format_func=lambda x: f"{format_cn(x)} ({CATALOG[x]['s']})")
-            prec_mi = p_col2.number_input("Tüketim Oranı m_i (t/t)", min_value=0.0, value=float(vd["prec_mi"]), step=0.05)
-            prec_origin = p_col3.selectbox("Öncül Menşei", ["Türkiye / Diğer Üçüncü Ülke", "AB / EFTA Menşeli", "Hurda / Sıfır Gömülü Emisyon", "Bilinmeyen Menşe (Annex IV En Yüksek)"])
+                st.markdown("**⚡ Elektrik Tüketimi & Şebeke Kuralı ((EU) 2025/2547 Ek II D.4)**")
+                e1, e2 = st.columns([1, 1.3])
+                elec_kwh = e1.number_input("Tesis Elektrik Tüketimi (kWh)", min_value=0.0, value=float(auto_kwh), step=1000.0)
+                has_ppa = e2.checkbox("Fiziksel PPA veya Doğrudan Teknik Bağlantı + Saatlik Sayaç Kanıtlı", value=False)
+                active_grid_ef = PPA_GRID_OPTIONS[st.selectbox("Kanıtlı Elektrik Faktörü", list(PPA_GRID_OPTIONS.keys()))] if has_ppa else EU_DEFAULT_TR_GRID_EF
 
-            pv1, pv2, pv3 = st.columns(3)
-            prec_verified = pv1.checkbox("Tedarikçi Verisi Doğrulanmış", value=bool(vd["prec_verified"]))
-            prec_actual_see = pv2.number_input("Doğrulanmış Öncül SEE (t/t)", min_value=0.0, value=float(vd["prec_actual_see"]), step=0.05)
-            prec_route = pv3.selectbox("Öncül Üretim Rotası", ["(E)", "(C)", "(D)", "(K)", "(L)", "GENEL"])
+                st.markdown("**🧱 Öncül Hammadde (Precursor) Girdileri — Complex Goods**")
+                p_col1, p_col2, p_col3 = st.columns(3)
+                prec_cn_idx = list(CATALOG.keys()).index(vd["prec_cn"]) if vd["prec_cn"] in CATALOG else 0
+                prec_cn = p_col1.selectbox("Öncül Hammadde CN", list(CATALOG.keys()), index=prec_cn_idx, format_func=lambda x: f"{format_cn(x)} ({CATALOG[x]['s']})")
+                prec_mi = p_col2.number_input("Tüketim Oranı m_i (t/t)", min_value=0.0, value=float(vd["prec_mi"]), step=0.05)
+                prec_origin = p_col3.selectbox("Öncül Menşei", ["Türkiye / Diğer Üçüncü Ülke", "AB / EFTA Menşeli", "Hurda / Sıfır Gömülü Emisyon", "Bilinmeyen Menşe (Annex IV En Yüksek)"])
 
-            run_btn = st.form_submit_button("Kesin Dönem Analizini & Kurumsal Belgeleri Üret (v6.0)", use_container_width=True, type="primary")
+                pv1, pv2, pv3 = st.columns(3)
+                prec_verified = pv1.checkbox("Tedarikçi Verisi Doğrulanmış", value=bool(vd["prec_verified"]))
+                prec_actual_see = pv2.number_input("Doğrulanmış Öncül SEE (t/t)", min_value=0.0, value=float(vd["prec_actual_see"]), step=0.05)
+                prec_route = pv3.selectbox("Öncül Üretim Rotası", ["(E)", "(C)", "(D)", "(K)", "(L)", "GENEL"])
+
+            run_btn = st.form_submit_button("Kesin Dönem Analizini & Kurumsal Belgeleri Üret (v7.0)", use_container_width=True, type="primary")
 
     if run_btn:
         fuels_input = {"dogalgaz": q_gas, "tas_komuru": q_coal, "kok_komuru": q_coke, "linyit": q_lignite, "fuel_oil": q_fueloil, "lpg": q_lpg}
         precursors_input = [{"cn": prec_cn, "m_i": prec_mi, "origin": prec_origin, "verified": prec_verified, "actual_see": prec_actual_see, "route": prec_route}]
-        res = calculate_cbam_v6(
+        res = calculate_cbam_v7(
             selected_cn, selected_route, eu_tonnage, total_prod_ton,
             fuels_input, process_em_ton, elec_kwh, active_grid_ef,
             precursors_input, func_ratio, cbam_cert_price, local_cp_eff, yr_rule
         )
-        meta_v6 = {
+        meta_v7 = {
             "company_name": company_name, "buyer_company": buyer_company,
             "broker_name": broker_name, "installation_id": installation_id,
             "unlocode": unlocode, "coordinates": coordinates, "verifier_id": verifier_id,
@@ -1000,7 +1050,7 @@ with tab1:
         }
         findings, score, crit_c, warn_c, pass_c, bm_thermo, elec_pct, fuel_pct = run_verifier_audit_matrix(
             selected_cn, res["sector"], selected_route, eu_tonnage, total_prod_ton,
-            fuels_input, process_em_ton, elec_kwh, has_ppa, precursors_input, func_ratio, res, meta_v6
+            fuels_input, process_em_ton, elec_kwh, has_ppa, precursors_input, func_ratio, res, meta_v7
         )
 
         st.session_state["vault_data"].update({
@@ -1037,23 +1087,11 @@ with tab1:
             fig.update_layout(title=f"{yr_rule['year']} Yılı Net AB SKDM Maliyeti (€)", height=250, margin=dict(l=20, r=20, t=36, b=15))
             st.plotly_chart(fig, use_container_width=True)
 
-            # Türkiye Sektörel Termodinamik Kıyas Kartı
             st.markdown(f"#### 📊 Türkiye Sektörel Termodinamik Kıyas ({bm_thermo['label']})")
             tc1, tc2 = st.columns(2)
-            tc1.metric(
-                "Elektrik Yoğunluğu Konumu",
-                f"P{elec_pct} ({res['elec_mwh_per_ton']:.3f} MWh/t)",
-                delta=f"TR Medyan: {bm_thermo['elec_p50']} MWh/t",
-                delta_color="inverse"
-            )
-            tc2.metric(
-                "Yakıt Yoğunluğu Konumu",
-                f"P{fuel_pct} ({res['fuel_gj_per_ton']:.2f} GJ/t)",
-                delta=f"TR Medyan: {bm_thermo['fuel_p50']} GJ/t",
-                delta_color="inverse"
-            )
+            tc1.metric("Elektrik Yoğunluğu Konumu", f"P{elec_pct} ({res['elec_mwh_per_ton']:.3f} MWh/t)", delta=f"TR Medyan: {bm_thermo['elec_p50']} MWh/t", delta_color="inverse")
+            tc2.metric("Yakıt Yoğunluğu Konumu", f"P{fuel_pct} ({res['fuel_gj_per_ton']:.2f} GJ/t)", delta=f"TR Medyan: {bm_thermo['fuel_p50']} GJ/t", delta_color="inverse")
 
-            # Verifier Ön-Kontrol Matrisi
             st.markdown(f"#### 🛡️ Verifier Ön-Kontrol Matrisi — Hazırlık Skoru: **%{score}**")
             for f_item in findings:
                 if f_item["level"] == "CRITICAL":
@@ -1064,21 +1102,25 @@ with tab1:
                     st.success(f"**[{f_item['code']}] {f_item['title']}:** {f_item['detail']}")
 
         st.divider()
-        st.markdown("#### 📦 Tek Tıkla İndirilebilir Resmi ve Ticari Çıktılar")
-        b1, b2, b3, b4 = st.columns(4)
+        st.markdown("#### 📦 Resmi ve Ticari Çıktılar (Lisans Kilidi Kontrolü)")
         logo_b = broker_logo.getvalue() if broker_logo else None
-        pdf_out = generate_corporate_pdf_v6(meta_v6, res, {"score": score, "crit": crit_c, "warn": warn_c, "elec_pct": elec_pct, "fuel_pct": fuel_pct}, logo_b)
-        buyer_pdf_out = generate_eu_buyer_pitch_pdf(meta_v6, res, buyer_company)
-        eu_xlsx_out = generate_eu_communication_template_xlsx(meta_v6, res)
+        pdf_out = generate_corporate_pdf_v7(meta_v7, res, {"score": score, "crit": crit_c, "warn": warn_c, "elec_pct": elec_pct, "fuel_pct": fuel_pct}, is_licensed=is_licensed, logo_bytes=logo_b)
 
-        xml_row = dict(res)
-        xml_row["tonnage"] = eu_tonnage
-        xml_out = generate_cbam_xml_v6(meta_v6, [xml_row])
+        if is_licensed:
+            b1, b2, b3, b4 = st.columns(4)
+            buyer_pdf_out = generate_eu_buyer_pitch_pdf(meta_v7, res, buyer_company)
+            eu_xlsx_out = generate_eu_communication_template_xlsx(meta_v7, res)
+            xml_row = dict(res)
+            xml_row["tonnage"] = eu_tonnage
+            xml_out = generate_cbam_xml_v7(meta_v7, [xml_row])
 
-        b1.download_button("📥 TR Pre-Audit PDF", data=pdf_out, file_name=f"TR_CBAM_PreAudit_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
-        b2.download_button("🌍 AB Alıcı Teklif PDF (EN)", data=buyer_pdf_out, file_name=f"EU_CBAM_Buyer_Offer_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
-        b3.download_button("📗 AB Resmi İletişim Şablonu (.xlsx)", data=eu_xlsx_out, file_name=f"EU_CBAM_Comm_Template_{selected_cn}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        b4.download_button("🧾 O3CI v3.2 XML", data=xml_out, file_name=f"EU_CBAM_O3CI_v32_{selected_cn}.xml", mime="application/xml", use_container_width=True)
+            b1.download_button("📥 TR Pre-Audit PDF", data=pdf_out, file_name=f"TR_CBAM_PreAudit_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
+            b2.download_button("🌍 AB Alıcı Teklif PDF (EN)", data=buyer_pdf_out, file_name=f"EU_CBAM_Buyer_Offer_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
+            b3.download_button("📗 AB Resmi İletişim Şablonu (.xlsx)", data=eu_xlsx_out, file_name=f"EU_CBAM_Comm_Template_{selected_cn}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+            b4.download_button("🧾 O3CI v3.2 XML", data=xml_out, file_name=f"EU_CBAM_O3CI_v32_{selected_cn}.xml", mime="application/xml", use_container_width=True)
+        else:
+            st.warning("🔒 **Ücretsiz Ön-Analiz Modu Aktif:** İngilizce AB Alıcı Teklif PDF'i, AB Resmi İletişim Şablonu (`.xlsx`) ve O3CI v3.2 XML çıktıları kurumsal lisans anahtarı gerektirir. Aşağıdan filigranlı taslak ön-analiz PDF'ini indirebilirsiniz.")
+            st.download_button("📥 Filigranlı Taslak Ön-Analiz PDF İndir", data=pdf_out, file_name=f"TASLAK_TR_CBAM_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
 
         if vault_pass:
             vault_bytes = encrypt_vault_payload(st.session_state["vault_data"], vault_pass)
@@ -1091,9 +1133,43 @@ with tab1:
             )
 
 # ==============================================================================
-# SEKME 2: LOGO TİGER / MİKRO / NETSİS / SAP HIZLI VERİ AKTARIM SİHİRBAZI
+# SEKME 2: GÜMRÜK MÜŞAVİRİ SIFIR-SORUMLULUK MÜŞTERİ DAVET MODÜLÜ
 # ==============================================================================
 with tab2:
+    st.subheader("📨 Gümrük Müşaviri Sıfır-Sorumluluk Müşteri Yönlendirme & Davet Modülü")
+    st.markdown("Gümrük müşavirliklerinin teknik emisyon sorumluluğu almadan, beyanname özetindeki GTİP ve tonaj üzerinden müşterilerine otomatik SKDM risk daveti göndermesini sağlar.")
+
+    gm1, gm2 = st.columns(2)
+    with gm1:
+        gm_client_name = st.text_input("İhracatçı Müşteri Unvanı", value="Kocaeli Metal Profil Sanayi A.Ş.")
+        gm_dec_no = st.text_input("AB İhracat Beyanname / Referans No", value="26340100EX004812")
+        gm_cn = st.selectbox("Beyannamedeki Ana GTİP Kodu", list(CATALOG.keys()), index=list(CATALOG.keys()).index("72085120") if "72085120" in CATALOG else 0, format_func=lambda x: f"{format_cn(x)} ({CATALOG[x]['s']})")
+        gm_ton = st.number_input("Sevkiyat Net Ağırlığı (Ton)", min_value=1.0, value=85.0, step=5.0)
+
+    gm_item = CATALOG[gm_cn]
+    est_def_tax = gm_item["dv"] * yr_rule["std_markup"] * gm_ton * cbam_cert_price
+    est_save = est_def_tax * 0.62
+
+    with gm2:
+        st.metric("Müşterinin Cezalı Default SKDM Riski", f"{est_def_tax:,.0f} €")
+        st.metric("Tesis Verisiyle Tahmini Kurtarılacak Tutar", f"+{est_save:,.0f} €")
+
+        invite_msg = f"""Sayın {gm_client_name} Dış Ticaret / Finans Yönetimi,
+
+Müşavirliğimiz aracılığıyla tescil edilen {gm_dec_no} referanslı ({format_cn(gm_cn)} GTİP kodlu, {gm_ton:,.1f} Ton) AB ihracat sevkiyatınız, 2026 AB Sınırda Karbon Düzenlemesi (SKDM) kesin dönem kapsamındadır.
+
+Tesis enerji veriniz AB ithalatçısına iletilmediği takdirde, AB gümrüğünde varsayılan ceza tarifesi üzerinden yaklaşık {est_def_tax:,.0f} € sertifika maliyeti oluşmakta ve ithalatçı müşteriniz bu farkı faturanızdan kesme/sipariş iptali hakkı kazanmaktadır.
+
+Müşavirliğimizin teknik çözüm ortağı TR-CBAM platformu üzerinden sadece dönemlik elektrik ve doğalgaz faturanızı yükleyerek bu maliyetin yaklaşık {est_save:,.0f} € tutarındaki kısmını sıfırlayabilirsiniz.
+
+Saygılarımızla,
+{broker_name}"""
+        st.text_area("Müşteriye Gönderilecek Hazır Davet Metni (E-Posta / WhatsApp)", value=invite_msg, height=230)
+
+# ==============================================================================
+# SEKME 3: LOGO TİGER / MİKRO / NETSİS / SAP HIZLI VERİ AKTARIM SİHİRBAZI
+# ==============================================================================
+with tab3:
     st.subheader("🔌 Logo Tiger / Mikro / Netsis / SAP Hızlı Veri Aktarım Modülü")
     st.markdown("Muhasebe veya ERP programınızdan aldığınız ham fatura / üretim fişi dışa aktarım dosyasını (`.xlsx` veya `.csv`) yükleyin; sütunları eşleştirip tek tıkla ana hesaplama motoruna aktarın.")
 
@@ -1117,14 +1193,14 @@ with tab2:
                 st.session_state["vault_data"]["eu_tonnage"] = float(pd.to_numeric(df_erp[col_eu], errors="coerce").sum())
                 st.session_state["vault_data"]["elec_kwh"] = float(pd.to_numeric(df_erp[col_elec], errors="coerce").sum())
                 st.session_state["vault_data"]["q_gas"] = float(pd.to_numeric(df_erp[col_gas], errors="coerce").sum())
-                st.success(f"{erp_type} verileri başarıyla toplandı ve 1. Sekmeye aktarıldı! Şimdi 1. Sekmeye geçip analizi çalıştırabilirsiniz.")
+                st.success(f"{erp_type} verileri başarıyla toplandı ve 1. Sekmeye aktarıldı!")
         except Exception as e:
             st.error(f"ERP dosyası okunamadı: {e}")
 
 # ==============================================================================
-# SEKME 3: TEDARİKÇİ (PRECURSOR) VERİ PORTALI
+# SEKME 4: TEDARİKÇİ (PRECURSOR) VERİ PORTALI
 # ==============================================================================
-with tab3:
+with tab4:
     st.subheader("🤝 Tedarikçi Emisyon Veri Portalı (Precursor Network Effect)")
     t_col1, t_col2 = st.columns(2)
     with t_col1:
@@ -1163,9 +1239,9 @@ Saygılarımızla,
             st.success("Tedarikçi verisi ana hesaplama sekmesine aktarıldı!")
 
 # ==============================================================================
-# SEKME 4: ÇOKLU KALEM & KÜMÜLATİF 50 TON EŞİK KONTROLÜ
+# SEKME 5: ÇOKLU KALEM & KÜMÜLATİF 50 TON EŞİK KONTROLÜ
 # ==============================================================================
-with tab4:
+with tab5:
     st.subheader("Çoklu Sevkiyat Analizi & (EU) 2025/2083 Madde 2a Kümülatif 50 Ton Kontrolü")
     sample_df = pd.DataFrame([
         {"Urun_Adi": "Sıcak Haddelenmiş Sac", "CN_Kodu": "72085120", "Rota": "(E)", "Tesis_Uretim_Ton": 1000.0, "AB_Sevkiyat_Ton": 30.0, "Dogalgaz_m3": 18000.0, "Elektrik_kWh": 150000.0, "Oncul_CN": "72071114", "Oncul_mi": 1.05},
@@ -1176,7 +1252,7 @@ with tab4:
     with pd.ExcelWriter(xbuf, engine="openpyxl") as w:
         sample_df.to_excel(w, index=False, sheet_name="Sevkiyatlar")
 
-    st.download_button("📄 Örnek Çoklu Sevkiyat Şablonunu İndir (.xlsx)", data=xbuf.getvalue(), file_name="TR_CBAM_v6_Toplu_Sablon.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    st.download_button("📄 Örnek Çoklu Sevkiyat Şablonunu İndir (.xlsx)", data=xbuf.getvalue(), file_name="TR_CBAM_v7_Toplu_Sablon.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     up_xlsx = st.file_uploader("Doldurulmuş Sevkiyat Excel Dosyasını Yükle", type=["xlsx"])
     if up_xlsx:
@@ -1199,7 +1275,7 @@ with tab4:
                 if p_cn_raw not in CATALOG:
                     p_cn_raw = "72071114"
 
-                r = calculate_cbam_v6(
+                r = calculate_cbam_v7(
                     c_raw, rt, eu_t, tot_t,
                     {"dogalgaz": float(row.get("Dogalgaz_m3", 0.0))}, 0.0,
                     float(row.get("Elektrik_kWh", 0.0)), EU_DEFAULT_TR_GRID_EF,
@@ -1226,20 +1302,23 @@ with tab4:
             st.dataframe(df_out, use_container_width=True)
             st.metric("Toplam Sevkiyat Tasarrufu", f"+{df_out['Net Tasarruf (€)'].sum():,.2f} €")
 
-            meta_batch = {
-                "company_name": "Toplu İhracat Beyanı", "broker_name": broker_name,
-                "installation_id": installation_id, "unlocode": unlocode,
-                "coordinates": coordinates, "verifier_id": verifier_id, "year": yr_rule["year"]
-            }
-            b_xml = generate_cbam_xml_v6(meta_batch, batch_res)
-            st.download_button("🧾 Toplu Beyan İçin O3CI v3.2 XML İndir", data=b_xml, file_name=f"EU_CBAM_Batch_O3CI_v32_{yr_rule['year']}.xml", mime="application/xml", use_container_width=True)
+            if is_licensed:
+                meta_batch = {
+                    "company_name": "Toplu İhracat Beyanı", "broker_name": broker_name,
+                    "installation_id": installation_id, "unlocode": unlocode,
+                    "coordinates": coordinates, "verifier_id": verifier_id, "year": yr_rule["year"]
+                }
+                b_xml = generate_cbam_xml_v7(meta_batch, batch_res)
+                st.download_button("🧾 Toplu Beyan İçin O3CI v3.2 XML İndir", data=b_xml, file_name=f"EU_CBAM_Batch_O3CI_v32_{yr_rule['year']}.xml", mime="application/xml", use_container_width=True)
+            else:
+                st.info("🔒 Toplu beyan XML çıktısı kurumsal lisans anahtarı ile aktifleşir.")
         except Exception as e:
             st.error(f"Excel işleme hatası: {e}")
 
 # ==============================================================================
-# SEKME 5: 570 CN KODLU TAM RESMİ KATALOG
+# SEKME 6: 570 CN KODLU TAM RESMİ KATALOG
 # ==============================================================================
-with tab5:
+with tab6:
     st.subheader("Avrupa Komisyonu Resmi 2026 Kesin Dönem Türkiye & Benchmark Kataloğu (570 CN Kodu)")
     cat_rows = []
     for cn_8, v in CATALOG.items():
