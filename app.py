@@ -185,24 +185,27 @@ def inject_design_system(theme_name: str, font_name: str):
         html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {{
             background-color: {t['bg_canvas']} !important;
             color: {t['text_primary']} !important;
+            min-height: 100vh !important;
         }}
         .block-container {{
-            padding-top: 8px !important;
+            padding-top: 124px !important;
             padding-bottom: 3rem !important;
             max-width: 1460px;
         }}
 
-        /* SABİT ÜST KABUK (Sayfa aşağı kaydırıldıkça tepede kalır, altta siyah boşluk bırakmaz) */
+        /* SABİT ÜST KABUK (Sayfa kaydırıldıkça tepede sabit kalır) */
         .st-key-fixed_header_shell {{
-            position: sticky !important;
+            position: fixed !important;
             top: 0px !important;
+            left: 0px !important;
+            right: 0px !important;
+            width: 100% !important;
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
-            border: 1px solid {t['border']} !important;
+            border: none !important;
             border-bottom: 2px solid {t['accent']} !important;
-            border-radius: 0px 0px 10px 10px !important;
-            padding: 8px 14px 4px 14px !important;
-            margin-bottom: 14px !important;
+            border-radius: 0px !important;
+            padding: 8px 2.2rem 6px 2.2rem !important;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14) !important;
         }}
 
@@ -362,6 +365,12 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['text_primary']} !important;
             font-family: '{font_name}', sans-serif !important;
             font-weight: 600 !important;
+        }}
+        [data-testid="stForm"] {{
+            background-color: {t['bg_card']} !important;
+            border: 1px solid {t['border']} !important;
+            border-radius: 8px !important;
+            padding: 14px !important;
         }}
 
         /* Kompakt Üst Başlık Kutusu */
