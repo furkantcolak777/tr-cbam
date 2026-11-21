@@ -530,6 +530,7 @@ def inject_design_system(theme_name: str, font_name: str):
                 display: none !important;
             }}
         }}
+        
     </style>
     """, unsafe_allow_html=True)
 
