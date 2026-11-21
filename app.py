@@ -203,39 +203,43 @@ def inject_design_system(theme_name: str, font_name: str):
         @media (max-width: 768px) {{
             .st-key-fixed_header_shell {{
                 position: relative !important;
+                top: auto !important;
                 padding: 8px 0.7rem !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 12px !important;
             }}
-            .block-container {{
-                padding-top: 0.6rem !important;
+            .main .block-container, .block-container {{
+                padding-top: 0.5rem !important;
             }}
-            /* Üst bardaki başlık ve ikonları alt alta yığma, tek satırda tut */
+            /* Sağdaki 3 küçük butona sabit minimum genişlik ver ve ikon/yazı taşmasını önle */
             .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
                 flex-wrap: nowrap !important;
                 align-items: center !important;
                 gap: 4px !important;
             }}
             .st-key-fixed_header_shell [data-testid="column"] {{
-                min-width: 0 !important;
-                flex: 1 1 auto !important;
+                min-width: auto !important;
+                flex: 0 0 auto !important;
             }}
             .st-key-fixed_header_shell [data-testid="column"]:first-child {{
-                flex: 3 1 auto !important;
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
             }}
-            .topbar-desc, .topbar-sep {{
+            .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
+                padding: 4px 8px !important;
+                min-width: 42px !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stPopoverButton"] p {{
+                font-size: 0.78rem !important;
+                white-space: nowrap !important;
+            }}
+            .topbar-desc, .topbar-sep, .compliance-pill {{
                 display: none !important;
             }}
             .compact-topbar {{
                 padding: 6px 10px !important;
-                min-height: 38px !important;
+                min-height: 36px !important;
             }}
-            /* Mobilde 6'lı açık listeyi gizle, sadece "☰ Modüller" açılır menüsünü göster */
             .st-key-fixed_header_shell [data-testid="stRadio"] {{
-                display: none !important;
-            }}
-        }}
-        @media (min-width: 769px) {{
-            .st-key-mobile_nav_box {{
                 display: none !important;
             }}
         }}
@@ -1302,7 +1306,7 @@ with st.container(key="fixed_header_shell"):
     bar_left, bar_c1, bar_c3, bar_c4 = st.columns([3.10, 0.82, 0.58, 0.95], gap="small")
 
     with bar_c1:
-        with st.popover("🎨 Görünüm", use_container_width=True):
+        with st.popover("🎨 Tema", use_container_width=True):
             selected_theme_name = st.selectbox("Renk Paleti", list(THEMES.keys()), index=0)
             selected_font_name = st.selectbox("Yazı Tipi", list(FONTS.keys()), index=0)
 
