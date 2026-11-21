@@ -34,135 +34,215 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- KURUMSAL BANKACILIK / REGTECH ARAYÜZ CSS'İ (STRIPE & SAP FIORI STANDARDI) ---
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    /* Streamlit prototip izlerini tamamen gizle */
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display:none;}
-    [data-testid="stToolbar"] {display:none;}
+# --- 10 HAZIR GÖZ YORMAYAN KURUMSAL TEMA PALETİ ---
+THEMES = {
+    "6. Gece Arduvazı (Midnight Slate — Varsayılan)": {
+        "is_dark": True, "bg_main": "#0B1120", "bg_card": "#131C31", "bg_sidebar": "#080D1A",
+        "text_primary": "#F1F5F9", "text_secondary": "#94A3B8", "sidebar_text": "#F1F5F9",
+        "accent": "#3B82F6", "danger": "#F87171", "success": "#34D399"
+    },
+    "1. Kurumsal Arduvaz & Alabaster (FinTech Light)": {
+        "is_dark": False, "bg_main": "#F4F6F9", "bg_card": "#FFFFFF", "bg_sidebar": "#0F172A",
+        "text_primary": "#0F172A", "text_secondary": "#475569", "sidebar_text": "#F8FAFC",
+        "accent": "#1E3A8A", "danger": "#DC2626", "success": "#059669"
+    },
+    "2. Sıcak Kireçtaşı & Kömür (Warm Limestone)": {
+        "is_dark": False, "bg_main": "#F7F5F0", "bg_card": "#FCFBF9", "bg_sidebar": "#EFECE6",
+        "text_primary": "#1C1917", "text_secondary": "#57534E", "sidebar_text": "#1C1917",
+        "accent": "#292524", "danger": "#C2410C", "success": "#15803D"
+    },
+    "3. Kuzey Buzulu & Kobalt (Nordic Mist)": {
+        "is_dark": False, "bg_main": "#EFF3F8", "bg_card": "#F9FBFD", "bg_sidebar": "#E2E8F0",
+        "text_primary": "#1E293B", "text_secondary": "#64748B", "sidebar_text": "#1E293B",
+        "accent": "#0369A1", "danger": "#E11D48", "success": "#0D9488"
+    },
+    "4. Yeşil Finans & Adaçayı (ESG Sage)": {
+        "is_dark": False, "bg_main": "#F2F5F3", "bg_card": "#FAFDFB", "bg_sidebar": "#132A22",
+        "text_primary": "#142921", "text_secondary": "#4B6358", "sidebar_text": "#ECFDF5",
+        "accent": "#1B4332", "danger": "#B91C1C", "success": "#16A34A"
+    },
+    "5. İsviçre Bankacılığı & Gümüş (Swiss Vault)": {
+        "is_dark": False, "bg_main": "#F3F4F6", "bg_card": "#FFFFFF", "bg_sidebar": "#E5E7EB",
+        "text_primary": "#111827", "text_secondary": "#4B5563", "sidebar_text": "#111827",
+        "accent": "#1F2937", "danger": "#DC2626", "success": "#047857"
+    },
+    "7. Endüstriyel Karbon & Çelik (Graphite Steel)": {
+        "is_dark": True, "bg_main": "#121316", "bg_card": "#1A1C20", "bg_sidebar": "#0D0E10",
+        "text_primary": "#E4E4E7", "text_secondary": "#A1A1AA", "sidebar_text": "#E4E4E7",
+        "accent": "#60A5FA", "danger": "#EF4444", "success": "#10B981"
+    },
+    "8. Derin Okyanus & Prusya Mavisi (Deep Prussian)": {
+        "is_dark": True, "bg_main": "#0A1622", "bg_card": "#112233", "bg_sidebar": "#071019",
+        "text_primary": "#E2E8F0", "text_secondary": "#8FA3B8", "sidebar_text": "#E2E8F0",
+        "accent": "#38BDF8", "danger": "#FB7185", "success": "#2DD4BF"
+    },
+    "9. Obsidyen & Kehribar (Obsidian Amber)": {
+        "is_dark": True, "bg_main": "#141210", "bg_card": "#1E1B18", "bg_sidebar": "#0E0D0B",
+        "text_primary": "#F5F5F4", "text_secondary": "#A8A29E", "sidebar_text": "#F5F5F4",
+        "accent": "#D97706", "danger": "#F87171", "success": "#4ADE80"
+    },
+    "10. Kuzey Ormanı Gecesi (Nordic Pine Dark)": {
+        "is_dark": True, "bg_main": "#0E1715", "bg_card": "#16221F", "bg_sidebar": "#0A110F",
+        "text_primary": "#ECFDF5", "text_secondary": "#9CA3AF", "sidebar_text": "#ECFDF5",
+        "accent": "#10B981", "danger": "#F87171", "success": "#34D399"
+    },
+}
 
-    .main .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 2.5rem;
-        max-width: 1380px;
-    }
+def apply_corporate_theme(theme: dict):
+    st.markdown(f"""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
-    /* Kurumsal Kart Görünümü */
-    div[data-testid="stMetric"] {
-        background-color: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        padding: 16px 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(15, 41, 66, 0.04);
-    }
+        :root {{
+            --bg-main: {theme['bg_main']};
+            --bg-card: {theme['bg_card']};
+            --bg-sidebar: {theme['bg_sidebar']};
+            --text-primary: {theme['text_primary']};
+            --text-secondary: {theme['text_secondary']};
+            --sidebar-text: {theme['sidebar_text']};
+            --accent: {theme['accent']};
+            --danger: {theme['danger']};
+            --success: {theme['success']};
+            --border-subtle: rgba(148, 163, 184, 0.24);
+        }}
 
-    /* Sekmeleri Kurumsal Navigasyon Çubuğuna Çevir */
-    button[data-baseweb="tab"] {
-        font-size: 14px;
-        font-weight: 600;
-        color: #475569;
-        padding: 10px 16px;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #0F2942;
-        border-bottom-color: #0F2942;
-    }
+        /* Ham Streamlit Öğelerini Gizle */
+        #MainMenu, footer, header[data-testid="stHeader"] {{ visibility: hidden; height: 0; }}
+        .stDeployButton, [data-testid="stToolbar"] {{ display: none !important; }}
 
-    /* Kurumsal Üst Başlık Kartı */
-    .corp-header {
-        background-color: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-left: 5px solid #0F2942;
-        padding: 20px 26px;
-        border-radius: 10px;
-        margin-bottom: 18px;
-        box-shadow: 0 1px 3px rgba(15, 41, 66, 0.05);
-    }
-    .corp-header h1 {
-        margin: 0;
-        font-size: 1.48rem;
-        font-weight: 700;
-        color: #0F2942;
-    }
-    .corp-header p {
-        margin: 6px 0 0 0;
-        font-size: 0.9rem;
-        color: #475569;
-        font-weight: 500;
-    }
+        /* Ana Konteyner & Tipografi */
+        .stApp {{
+            background-color: var(--bg-main) !important;
+            color: var(--text-primary) !important;
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+        }}
+        .block-container {{
+            padding-top: 1.2rem !important;
+            padding-bottom: 2rem !important;
+            max-width: 1440px;
+        }}
+        section[data-testid="stSidebar"] {{
+            background-color: var(--bg-sidebar) !important;
+            border-right: 1px solid var(--border-subtle);
+            width: 285px !important;
+        }}
+        section[data-testid="stSidebar"] * {{
+            color: var(--sidebar_text);
+        }}
+        section[data-testid="stSidebar"] input, section[data-testid="stSidebar"] select {{
+            color: #0F172A !important;
+        }}
 
-    /* 3 Büyük KPI Kartı (Loss Aversion & Endowment Effect) */
-    .kpi-card-red {
-        background: #FFFFFF;
-        border: 1px solid #FECACA;
-        border-top: 4px solid #DC2626;
-        border-radius: 10px;
-        padding: 18px 20px;
-        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.06);
-    }
-    .kpi-card-green {
-        background: #FFFFFF;
-        border: 1px solid #A7F3D0;
-        border-top: 4px solid #047857;
-        border-radius: 10px;
-        padding: 18px 20px;
-        box-shadow: 0 2px 6px rgba(4, 120, 87, 0.06);
-    }
-    .kpi-card-navy {
-        background: #FFFFFF;
-        border: 1px solid #CBD5E1;
-        border-top: 4px solid #0F2942;
-        border-radius: 10px;
-        padding: 18px 20px;
-        box-shadow: 0 2px 6px rgba(15, 41, 66, 0.06);
-    }
-    .kpi-label {
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #64748B;
-        margin-bottom: 6px;
-    }
-    .kpi-val-red { font-size: 1.75rem; font-weight: 700; color: #DC2626; }
-    .kpi-val-green { font-size: 1.75rem; font-weight: 700; color: #047857; }
-    .kpi-val-navy { font-size: 1.75rem; font-weight: 700; color: #0F2942; }
-    .kpi-sub { font-size: 0.8rem; color: #475569; margin-top: 4px; }
+        /* Üst Utility Başlık Çubuğu */
+        .top-utility-bar {{
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }}
+        .brand-title {{
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }}
+        .status-pill {{
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--success);
+            border: 1px solid var(--success);
+            border-radius: 999px;
+            padding: 3px 11px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }}
 
-    /* Kilitli Önizleme Kutusu (Endowment Effect Paywall) */
-    .paywall-box {
-        background: #FFFFFF;
-        border: 1px solid #CBD5E1;
-        border-left: 5px solid #0F2942;
-        border-radius: 10px;
-        padding: 18px 22px;
-        margin-top: 12px;
-        box-shadow: 0 2px 8px rgba(15, 41, 66, 0.06);
-    }
-    .blur-preview {
-        background: #F1F5F9;
-        border: 1px dashed #94A3B8;
-        border-radius: 8px;
-        padding: 14px 18px;
-        margin-top: 10px;
-        color: #334155;
-        font-size: 0.85rem;
-        position: relative;
-    }
-    .blurred-text {
-        filter: blur(3.5px);
-        user-select: none;
-        opacity: 0.65;
-    }
-</style>
-""", unsafe_allow_html=True)
+        /* Kurumsal KPI Kartları */
+        .regtech-kpi-card {{
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 1.15rem 1.3rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }}
+        .kpi-danger {{ border-top: 4px solid var(--danger); }}
+        .kpi-neutral {{ border-top: 4px solid var(--accent); }}
+        .kpi-success {{
+            border-top: 4px solid var(--success);
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.09) 0%, var(--bg-card) 100%);
+        }}
+        .kpi-label {{
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.35rem;
+        }}
+        .kpi-value {{
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+            font-size: 1.68rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }}
+        .kpi-sub {{
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 0.35rem;
+        }}
+
+        /* 6 Sekmeli Navigasyon Barı */
+        .stTabs [data-baseweb="tab-list"] {{
+            gap: 6px;
+            background-color: var(--bg-card);
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+        }}
+        .stTabs [data-baseweb="tab"] {{
+            border-radius: 7px;
+            padding: 8px 15px;
+            font-weight: 600;
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+        }}
+        .stTabs [aria-selected="true"] {{
+            background-color: var(--accent) !important;
+            color: #FFFFFF !important;
+        }}
+
+        /* Kilitli Önizleme Kutusu */
+        .paywall-card {{
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-left: 4px solid var(--accent);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-top: 10px;
+        }}
+        .blur-sheet {{
+            background: rgba(148, 163, 184, 0.08);
+            border: 1px dashed var(--border-subtle);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }}
+        .blur-mask {{
+            filter: blur(3.5px);
+            user-select: none;
+            opacity: 0.6;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- LİSANS ANAHTARI DOĞRULAMA ---
 def check_license_active(key_str: str) -> tuple[bool, str]:
@@ -267,7 +347,7 @@ def encrypt_vault_payload(payload_dict: dict, passphrase: str) -> bytes:
     f = Fernet(_derive_key(passphrase, salt))
     token = f.encrypt(json.dumps(payload_dict, ensure_ascii=False).encode("utf-8"))
     envelope = {
-        "format": "TR-CBAM-VAULT-v1",
+        "format": "TR-CBAM-VAULT",
         "cipher": "AES-256-Fernet-PBKDF2",
         "created_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "salt_b64": base64.b64encode(salt).decode("ascii"),
@@ -503,7 +583,7 @@ def run_verifier_audit_matrix(
     return findings, readiness_score, crit_count, warn_count, pass_count, bm_thermo, elec_pct, fuel_pct
 
 # --- HESAPLAMA MOTORU ---
-def calculate_cbam_v8(
+def calculate_cbam_core(
     cn_code, route_tag, eu_tonnage, total_prod_ton,
     fuels_dict, process_em_ton, elec_kwh, grid_ef,
     precursors_list, func_ratio,
@@ -619,7 +699,7 @@ def calculate_cbam_v8(
 # --- AB KOMİSYONU RESMİ COMMUNICATION TEMPLATE EXCEL ÜRETİCİSİ ---
 def generate_eu_communication_template_xlsx(meta, res):
     wb = openpyxl.Workbook()
-    header_fill = PatternFill(start_color="0F2942", end_color="0F2942", fill_type="solid")
+    header_fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
     sub_fill = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
     accent_fill = PatternFill(start_color="DCFCE7", end_color="DCFCE7", fill_type="solid")
     white_bold = Font(color="FFFFFF", bold=True, size=11)
@@ -706,7 +786,7 @@ def generate_eu_buyer_pitch_pdf(meta, res, buyer_company="EU Importer / Customer
     pdf.add_page()
     font_name = setup_unicode_font(pdf)
 
-    pdf.set_fill_color(15, 41, 66)
+    pdf.set_fill_color(15, 23, 42)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font(font_name, "B", 11)
     pdf.cell(0, 11, "EU CBAM VERIFIED COST ADVANTAGE & SUPPLIER COMPLIANCE BRIEF", ln=True, align="C", fill=True)
@@ -716,7 +796,7 @@ def generate_eu_buyer_pitch_pdf(meta, res, buyer_company="EU Importer / Customer
     pdf.cell(0, 6, f"Prepared by: {meta['company_name']} (Türkiye)  |  For: {buyer_company}  |  Reporting Year: {meta['year']}", ln=True, align="C")
     pdf.ln(4)
 
-    pdf.set_text_color(15, 41, 66)
+    pdf.set_text_color(15, 23, 42)
     pdf.set_font(font_name, "B", 10)
     pdf.cell(0, 6, "EXECUTIVE SUMMARY FOR EU IMPORT PROCUREMENT & COMPLIANCE", ln=True)
     pdf.set_font(font_name, "", 8.8)
@@ -757,7 +837,7 @@ def generate_eu_buyer_pitch_pdf(meta, res, buyer_company="EU Importer / Customer
     return bytes(pdf.output())
 
 # --- O3CI v3.2 XML ÜRETİCİ ---
-def generate_cbam_xml_v8(meta, results_list):
+def generate_cbam_xml_core(meta, results_list):
     root = ET.Element("CBAMDefinitiveDeclaration", xmlns="urn:eu:taxud:cbam:o3ci:v3.2")
     header = ET.SubElement(root, "DeclarationHeader")
     ET.SubElement(header, "ReportingYear").text = str(meta["year"])
@@ -796,7 +876,7 @@ def generate_cbam_xml_v8(meta, results_list):
     return reparsed.toprettyxml(indent="  ").encode("utf-8")
 
 # --- WHITE-LABEL KURUMSAL PRE-AUDIT PDF ÜRETİCİ ---
-def generate_corporate_pdf_v8(meta, res, audit_summary, is_licensed=False, logo_bytes=None):
+def generate_corporate_pdf_core(meta, res, audit_summary, is_licensed=False, logo_bytes=None):
     pdf = FPDF()
     pdf.add_page()
     font_name = setup_unicode_font(pdf)
@@ -820,7 +900,7 @@ def generate_corporate_pdf_v8(meta, res, audit_summary, is_licensed=False, logo_
         except Exception:
             pass
 
-    pdf.set_fill_color(15, 41, 66)
+    pdf.set_fill_color(15, 23, 42)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font(font_name, "B", 10.6)
     pdf.cell(0, 10.5, f"{meta['broker_name'].upper()} | AB SKDM KESİN DÖNEM DENETİM RAPORU", ln=True, align="C", fill=True)
@@ -915,31 +995,44 @@ if "vault_data" not in st.session_state:
 
 vd = st.session_state["vault_data"]
 
-# --- SOL SİDEBAR (PROGRESSIVE DISCLOSURE — SADECE 3 TEMİZ BLOK + KAPALI EXPANDER) ---
-with st.sidebar:
-    # 1. Blok: Kurumsal Marka & Durum Rozeti
-    st.markdown("### 🛡️ TR-CBAM")
-    st.markdown(
-        "<div style='background:#ECFDF5; border:1px solid #A7F3D0; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:600; color:#047857;'>"
-        "● (EU) 2026/1740 Mevzuat Güncel"
-        "</div>",
-        unsafe_allow_html=True
+# --- ÜST UTILITY HEADER & SAĞ ÜST 10 RENK PALETİ SEÇİCİSİ ---
+hdr_left, hdr_right = st.columns([1.85, 1.15])
+with hdr_right:
+    selected_theme_name = st.selectbox(
+        "🎨 Arayüz Renk Paleti (10 Hazır Tema)",
+        list(THEMES.keys()),
+        index=0,
+        label_visibility="collapsed"
     )
-    st.divider()
 
-    # 2. Blok: Lisans & Erişim Durumu
-    st.markdown("**🔑 Lisans & Erişim Durumu**")
+active_theme = THEMES[selected_theme_name]
+apply_corporate_theme(active_theme)
+
+with hdr_left:
+    st.markdown("""
+    <div class="top-utility-bar">
+        <div>
+            <span class="brand-title">🛡️ TR-CBAM</span>
+            <span class="status-pill">● AB SKDM Mevzuat Uyumlu ((EU) 2026/1740)</span>
+            <div style="font-size:0.82rem; color:var(--text-secondary); margin-top:4px;">
+                AB Sınırda Karbon Ceza Kalkanı, Termodinamik Denetim ve İhracat Uyum Platformu
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- SOL SİDEBAR (285px DARALTILMIŞ & ODAKLI) ---
+with st.sidebar:
+    st.markdown("### 🔑 Lisans & Erişim Durumu")
     license_key = st.text_input("Kurumsal Lisans Anahtarı", type="password", value="", placeholder="TRCBAM-PRO-XXXX")
     is_licensed, license_label = check_license_active(license_key)
     if is_licensed:
         st.success(f"✓ {license_label}")
     else:
-        st.caption(f"🔒 *{license_label}*")
+        st.warning(f"🔒 {license_label}")
 
     st.divider()
-
-    # 3. Blok: Dönem & Piyasa Göstergesi
-    st.markdown("**📅 Dönem & Piyasa Göstergesi**")
+    st.markdown("### 📅 Beyan Dönemi & Piyasa")
     year_choice = st.selectbox("Beyan Yılı", list(YEAR_RULES.keys()))
     yr_rule = YEAR_RULES[year_choice]
     cbam_cert_price = st.number_input("AB ETS Karbon Fiyatı (€ / tCO₂e)", min_value=10.0, value=82.32, step=0.5)
@@ -951,9 +1044,7 @@ with st.sidebar:
         local_cp_eff = st.number_input("TR-ETS Mahsup (€ / tCO₂e)", min_value=0.0, value=15.0, step=1.0)
 
     st.divider()
-
-    # Gelişmiş & White-Label Ayarlar Kapalı Çekmece İçinde (Bilişsel Yük Azaltma)
-    with st.expander("⚙️ Tesis Sicil, White-Label Logo & Şifreli Kasa (.cbamvault)"):
+    with st.expander("⚙️ Gelişmiş Tesis & Şifreli Kasa Ayarları (.cbamvault)", expanded=False):
         broker_name = st.text_input("Danışmanlık / Kurum Unvanı (White-Label)", value="TR-CBAM Kurumsal Uyum")
         broker_logo = st.file_uploader("Kurumsal Logo Yükle (PDF Anteti)", type=["png", "jpg", "jpeg"])
         installation_id = st.text_input("CBAM Registry Installation ID", value=vd["installation_id"])
@@ -962,8 +1053,7 @@ with st.sidebar:
         verifier_id = st.text_input("Akredite Doğrulayıcı ID ((EU) 2025/2547)", value="PENDING-VERIFIER-2026")
 
         st.markdown("---")
-        st.markdown("**🔐 Zero-Knowledge Şifreli Kasa**")
-        vault_pass = st.text_input("Tesis Kasa Parolası", type="password", value="")
+        vault_pass = st.text_input("Tesis Kasa Parolası (AES-256)", type="password", value="")
         uploaded_vault = st.file_uploader("Kayıtlı Kasa Yükle (.cbamvault)", type=["cbamvault"])
         if uploaded_vault and vault_pass:
             if st.button("🔓 Kasayı Çöz ve Yükle", use_container_width=True):
@@ -975,14 +1065,7 @@ with st.sidebar:
                 except Exception:
                     st.error("Parola hatalı veya kasa dosyası bozuk.")
 
-# --- KURUMSAL ÜST BAŞLIK (LOSS AVERSION ÇERÇEVELEMESİ) ---
-st.markdown("""
-<div class="corp-header">
-    <h1>TR-CBAM | AB Sınırda Karbon (SKDM) Ceza Kalkanı ve İhracat Uyum Platformu</h1>
-    <p>AB Gümrüklerinde %10–%30 Varsayılan Ceza Tarifesinden Korunun • 570 CN Resmi Hesaplama Motoru</p>
-</div>
-""", unsafe_allow_html=True)
-
+# --- 6 SEKMELİ KURUMSAL NAVİGASYON ---
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "🏭 Sevkiyat & Ceza Analizi",
     "📨 Gümrük Müşaviri Referral",
@@ -993,15 +1076,15 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 ])
 
 # ==============================================================================
-# SEKME 1: SEVKİYAT ANALİZİ + 3 BÜYÜK KPI KARTI + ENDOWMENT PAYWALL
+# SEKME 1: %38 SOL GİRİŞ / %62 SAĞ FİNANSAL ÇIKTI
 # ==============================================================================
 with tab1:
-    col_left, col_right = st.columns([1.15, 1.05])
+    col_left, col_right = st.columns([1.1, 1.8], gap="large")
 
     with col_left:
         ui_mode = st.radio(
-            "Veri Giriş Modu",
-            ["⚡ Hızlı Analiz (2 Dakika — 4 Temel Veri)", "🔬 Detaylı Mühendislik & Doğrulayıcı Modu"],
+            "Çalışma Modu",
+            ["⚡ Hızlı Analiz Modu (4 Temel Veri)", "🔬 Detaylı Mühendislik Modu"],
             horizontal=True
         )
         is_quick_mode = ui_mode.startswith("⚡")
@@ -1017,7 +1100,7 @@ with tab1:
             f"1. İhracat Ürünü CN / GTİP Kodu ({len(filtered_cns)} kayıt)",
             filtered_cns,
             index=default_idx,
-            format_func=lambda x: f"{format_cn(x)} | [{CATALOG[x]['s']}] {CATALOG[x]['d'][:70]}"
+            format_func=lambda x: f"{format_cn(x)} | [{CATALOG[x]['s']}] {CATALOG[x]['d'][:65]}"
         )
         sel_item = CATALOG[selected_cn]
 
@@ -1034,11 +1117,11 @@ with tab1:
             selected_route = st.selectbox("Üretim Rotası ((EU) 2025/2620 Ek Bölüm 5.3)", avail_routes, index=default_route_idx, format_func=lambda r: ROUTE_LABELS.get(r, r))
             func_ratio = 1.0
             if sel_item["s"] == "Çimento" and not selected_cn.startswith("252310"):
-                func_ratio = st.slider("Çimento İçindeki Klinker Oranı (%)", 10, 100, 75) / 100.0
+                func_ratio = st.slider("Çimento Klinker Oranı (%)", 10, 100, 75) / 100.0
             elif sel_item["s"] == "Gübre":
                 func_ratio = st.slider("Gübre Azot (N) İçeriği (%)", 5, 82, 27) / 100.0
 
-        invoice_file = st.file_uploader("Opsiyonel: Elektrik / Doğalgaz Faturası Yükle (PDF / JPG / PNG)", type=["pdf", "png", "jpg", "jpeg"])
+        invoice_file = st.file_uploader("Opsiyonel: Elektrik / Doğalgaz Faturası Yükle", type=["pdf", "png", "jpg", "jpeg"])
         auto_kwh, auto_gas = float(vd["elec_kwh"]), float(vd["q_gas"])
         invoice_status = "Kanıt Belgesi Yüklenmedi"
         if invoice_file:
@@ -1046,21 +1129,20 @@ with tab1:
             invoice_status = f"Doğrulandı: {invoice_file.name}"
             if dk:
                 auto_kwh = dk
-                st.success(f"Faturadan elektrik tüketimi çekildi: **{dk:,.2f} kWh**")
+                st.success(f"Elektrik okundu: **{dk:,.2f} kWh**")
             if dg:
                 auto_gas = dg
-                st.success(f"Faturadan doğalgaz tüketimi çekildi: **{dg:,.2f} m³**")
+                st.success(f"Doğalgaz okundu: **{dg:,.2f} m³**")
 
-        with st.form("v8_main_form"):
-            c_name1, c_name2 = st.columns(2)
-            company_name = c_name1.text_input("İhracatçı Firma Unvanı (TR)", value=vd["company_name"])
-            buyer_company = c_name2.text_input("AB İthalatçı / Müşteri Unvanı", value=vd.get("buyer_company", "Muster Stahlhandel GmbH (DE)"))
+        with st.form("cbam_main_form"):
+            company_name = st.text_input("İhracatçı Firma Unvanı (TR)", value=vd["company_name"])
+            buyer_company = st.text_input("AB İthalatçı / Müşteri Unvanı", value=vd.get("buyer_company", "Muster Stahlhandel GmbH (DE)"))
 
             if is_quick_mode:
-                q1, q2, q3 = st.columns(3)
-                eu_tonnage = q1.number_input("2. AB Sevkiyatı (Ton)", min_value=0.1, value=float(vd["eu_tonnage"]), step=10.0)
-                elec_kwh = q2.number_input("3. Elektrik (kWh)", min_value=0.0, value=float(auto_kwh), step=1000.0)
-                q_gas = q3.number_input("4. Doğalgaz (m³)", min_value=0.0, value=float(auto_gas), step=500.0)
+                eu_tonnage = st.number_input("2. AB Sevkiyat Net Ağırlığı (Ton)", min_value=0.1, value=float(vd["eu_tonnage"]), step=10.0)
+                q_e1, q_e2 = st.columns(2)
+                elec_kwh = q_e1.number_input("3. Elektrik (kWh)", min_value=0.0, value=float(auto_kwh), step=1000.0)
+                q_gas = q_e2.number_input("4. Doğalgaz (m³)", min_value=0.0, value=float(auto_gas), step=500.0)
 
                 total_prod_ton = max(eu_tonnage, float(vd["total_prod_ton"]))
                 q_coal = q_coke = q_lignite = q_fueloil = q_lpg = process_em_ton = 0.0
@@ -1074,48 +1156,44 @@ with tab1:
                 prec_route = selected_route
             else:
                 p1, p2 = st.columns(2)
-                total_prod_ton = p1.number_input("Tesis Dönemlik Toplam Üretimi (Ton)", min_value=1.0, value=float(vd["total_prod_ton"]), step=50.0)
-                eu_tonnage = p2.number_input("AB İhracat Sevkiyatı (Ton)", min_value=0.1, value=float(vd["eu_tonnage"]), step=10.0)
+                total_prod_ton = p1.number_input("Tesis Toplam Üretimi (Ton)", min_value=1.0, value=float(vd["total_prod_ton"]), step=50.0)
+                eu_tonnage = p2.number_input("AB Sevkiyatı (Ton)", min_value=0.1, value=float(vd["eu_tonnage"]), step=10.0)
 
-                f1, f2, f3 = st.columns(3)
+                f1, f2 = st.columns(2)
                 q_gas = f1.number_input("Doğalgaz (m³)", min_value=0.0, value=float(auto_gas), step=500.0)
                 q_coal = f2.number_input("Taş Kömürü (Ton)", min_value=0.0, value=0.0, step=1.0)
+                f3, f4 = st.columns(2)
                 q_coke = f3.number_input("Kok Kömürü (Ton)", min_value=0.0, value=0.0, step=1.0)
-
-                f4, f5, f6 = st.columns(3)
                 q_lignite = f4.number_input("Linyit (Ton)", min_value=0.0, value=0.0, step=1.0)
+                f5, f6 = st.columns(2)
                 q_fueloil = f5.number_input("Fuel-Oil (Ton)", min_value=0.0, value=0.0, step=1.0)
                 q_lpg = f6.number_input("LPG (Ton)", min_value=0.0, value=0.0, step=1.0)
 
-                process_em_ton = st.number_input("Doğrudan Proses Emisyonları (tCO₂e)", min_value=0.0, value=0.0, step=5.0)
-
-                e1, e2 = st.columns([1, 1.3])
-                elec_kwh = e1.number_input("Tesis Elektrik Tüketimi (kWh)", min_value=0.0, value=float(auto_kwh), step=1000.0)
-                has_ppa = e2.checkbox("Fiziksel PPA / Doğrudan Hat Kanıtlı", value=False)
+                process_em_ton = st.number_input("Proses Emisyonları (tCO₂e)", min_value=0.0, value=0.0, step=5.0)
+                elec_kwh = st.number_input("Elektrik Tüketimi (kWh)", min_value=0.0, value=float(auto_kwh), step=1000.0)
+                has_ppa = st.checkbox("Fiziksel PPA / Doğrudan Hat Kanıtlı", value=False)
                 active_grid_ef = PPA_GRID_OPTIONS[st.selectbox("Kanıtlı Elektrik Faktörü", list(PPA_GRID_OPTIONS.keys()))] if has_ppa else EU_DEFAULT_TR_GRID_EF
 
-                p_col1, p_col2, p_col3 = st.columns(3)
                 prec_cn_idx = list(CATALOG.keys()).index(vd["prec_cn"]) if vd["prec_cn"] in CATALOG else 0
-                prec_cn = p_col1.selectbox("Öncül Hammadde CN", list(CATALOG.keys()), index=prec_cn_idx, format_func=lambda x: f"{format_cn(x)} ({CATALOG[x]['s']})")
-                prec_mi = p_col2.number_input("Tüketim Oranı m_i (t/t)", min_value=0.0, value=float(vd["prec_mi"]), step=0.05)
-                prec_origin = p_col3.selectbox("Öncül Menşei", ["Türkiye / Diğer Üçüncü Ülke", "AB / EFTA Menşeli", "Hurda / Sıfır Gömülü Emisyon", "Bilinmeyen Menşe (Annex IV En Yüksek)"])
-
-                pv1, pv2, pv3 = st.columns(3)
-                prec_verified = pv1.checkbox("Tedarikçi Verisi Doğrulanmış", value=bool(vd["prec_verified"]))
-                prec_actual_see = pv2.number_input("Doğrulanmış Öncül SEE (t/t)", min_value=0.0, value=float(vd["prec_actual_see"]), step=0.05)
-                prec_route = pv3.selectbox("Öncül Üretim Rotası", ["(E)", "(C)", "(D)", "(K)", "(L)", "GENEL"])
+                prec_cn = st.selectbox("Öncül Hammadde CN", list(CATALOG.keys()), index=prec_cn_idx, format_func=lambda x: f"{format_cn(x)} ({CATALOG[x]['s']})")
+                pc1, pc2 = st.columns(2)
+                prec_mi = pc1.number_input("Öncül Oranı m_i (t/t)", min_value=0.0, value=float(vd["prec_mi"]), step=0.05)
+                prec_origin = pc2.selectbox("Öncül Menşei", ["Türkiye / Diğer Üçüncü Ülke", "AB / EFTA Menşeli", "Hurda / Sıfır Gömülü Emisyon", "Bilinmeyen Menşe (Annex IV En Yüksek)"])
+                prec_verified = st.checkbox("Tedarikçi Verisi Doğrulanmış", value=bool(vd["prec_verified"]))
+                prec_actual_see = st.number_input("Doğrulanmış Öncül SEE (t/t)", min_value=0.0, value=float(vd["prec_actual_see"]), step=0.05)
+                prec_route = st.selectbox("Öncül Üretim Rotası", ["(E)", "(C)", "(D)", "(K)", "(L)", "GENEL"])
 
             run_btn = st.form_submit_button("🛡️ İhracat Ceza Riskini Hesapla & AB Alıcı Raporu Oluştur", use_container_width=True, type="primary")
 
     if run_btn:
         fuels_input = {"dogalgaz": q_gas, "tas_komuru": q_coal, "kok_komuru": q_coke, "linyit": q_lignite, "fuel_oil": q_fueloil, "lpg": q_lpg}
         precursors_input = [{"cn": prec_cn, "m_i": prec_mi, "origin": prec_origin, "verified": prec_verified, "actual_see": prec_actual_see, "route": prec_route}]
-        res = calculate_cbam_v8(
+        res = calculate_cbam_core(
             selected_cn, selected_route, eu_tonnage, total_prod_ton,
             fuels_input, process_em_ton, elec_kwh, active_grid_ef,
             precursors_input, func_ratio, cbam_cert_price, local_cp_eff, yr_rule
         )
-        meta_v8 = {
+        meta_obj = {
             "company_name": company_name, "buyer_company": buyer_company,
             "broker_name": broker_name, "installation_id": installation_id,
             "unlocode": unlocode, "coordinates": coordinates, "verifier_id": verifier_id,
@@ -1123,7 +1201,7 @@ with tab1:
         }
         findings, score, crit_c, warn_c, pass_c, bm_thermo, elec_pct, fuel_pct = run_verifier_audit_matrix(
             selected_cn, res["sector"], selected_route, eu_tonnage, total_prod_ton,
-            fuels_input, process_em_ton, elec_kwh, has_ppa, precursors_input, func_ratio, res, meta_v8
+            fuels_input, process_em_ton, elec_kwh, has_ppa, precursors_input, func_ratio, res, meta_obj
         )
 
         st.session_state["vault_data"].update({
@@ -1137,94 +1215,110 @@ with tab1:
         })
 
         with col_right:
-            # 3 BÜYÜK KPI KARTI (LOSS AVERSION & ENDOWMENT EFFECT)
+            # 1. ÜST SATIR: 3 BÜYÜK FİNANSAL KPI KARTI
             k1, k2, k3 = st.columns(3)
             with k1:
                 st.markdown(f"""
-                <div class="kpi-card-red">
-                    <div class="kpi-label">Varsayılan Tarife Ceza Riskiniz</div>
-                    <div class="kpi-val-red">{res['tax_default']:,.0f} €</div>
+                <div class="regtech-kpi-card kpi-danger">
+                    <div class="kpi-label">AB Varsayılan Tarife Cezası</div>
+                    <div class="kpi-value" style="color:var(--danger);">{res['tax_default']:,.0f} €</div>
                     <div class="kpi-sub">AB alıcısının faturanızdan kesebileceği tutar</div>
                 </div>
                 """, unsafe_allow_html=True)
             with k2:
                 st.markdown(f"""
-                <div class="kpi-card-green">
-                    <div class="kpi-label">Tesis Verinizle Kurtarılan Tutar</div>
-                    <div class="kpi-val-green">+{res['direct_savings']:,.0f} €</div>
-                    <div class="kpi-sub">Ton başına +{res['savings_per_ton_eur']:,.1f} € rekabet avantajı</div>
+                <div class="regtech-kpi-card kpi-neutral">
+                    <div class="kpi-label">Tesis Gerçek SKDM Yükü</div>
+                    <div class="kpi-value" style="color:var(--text-primary);">{res['tax_actual']:,.0f} €</div>
+                    <div class="kpi-sub">Gerçek SEE: {res['actual_see_per_ton']:.3f} tCO₂e/t</div>
                 </div>
                 """, unsafe_allow_html=True)
             with k3:
                 st.markdown(f"""
-                <div class="kpi-card-navy">
-                    <div class="kpi-label">TÜV / SGS Denetim Hazırlık Skoru</div>
-                    <div class="kpi-val-navy">%{score} / 100</div>
-                    <div class="kpi-sub">Türkiye Kıyas: Elektrik P{elec_pct} • Yakıt P{fuel_pct}</div>
+                <div class="regtech-kpi-card kpi-success">
+                    <div class="kpi-label">Korunan Net İhracat Avantajı</div>
+                    <div class="kpi-value" style="color:var(--success); font-size:1.9rem;">+{res['direct_savings']:,.0f} €</div>
+                    <div class="kpi-sub">Ton başına +{res['savings_per_ton_eur']:,.1f} € rekabet avantajı</div>
                 </div>
                 """, unsafe_allow_html=True)
 
             st.write("")
-            fig = go.Figure(data=[
-                go.Bar(
-                    x=["Kanıtsız Varsayılan Ceza (A)", "Tesis Gerçek Yükümlülüğü (B)"],
-                    y=[res["tax_default"], res["tax_actual"]],
-                    marker_color=["#DC2626", "#047857"],
-                    text=[f"{res['tax_default']:,.0f} €", f"{res['tax_actual']:,.0f} €"],
-                    textposition="auto"
+            # 2. ORTA SATIR: SOL (%65) PLOTLY GRAFİK + SAĞ (%35) DENETÇİ SKOR KARTI
+            mid_left, mid_right = st.columns([1.85, 1.0])
+            with mid_left:
+                fig = go.Figure(data=[
+                    go.Bar(
+                        x=["Kanıtsız Ceza (A)", "Gerçek Tesis Yükü (B)"],
+                        y=[res["tax_default"], res["tax_actual"]],
+                        marker_color=[active_theme["danger"], active_theme["success"]],
+                        text=[f"{res['tax_default']:,.0f} €", f"{res['tax_actual']:,.0f} €"],
+                        textposition="auto"
+                    )
+                ])
+                fig.update_layout(
+                    template="none",
+                    title=f"{company_name} — {yr_rule['year']} SKDM Maliyet Kıyaslaması (€)",
+                    height=265,
+                    margin=dict(l=20, r=20, t=42, b=20),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color=active_theme["text_primary"], family="IBM Plex Sans"),
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor="rgba(148,163,184,0.2)")
                 )
-            ])
-            fig.update_layout(
-                title=f"{company_name} — {yr_rule['year']} AB SKDM Maliyet Kıyaslaması (€)",
-                height=245,
-                margin=dict(l=20, r=20, t=38, b=15),
-                paper_bgcolor="#FFFFFF",
-                plot_bgcolor="#F8FAFC"
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True)
 
-            # ENDOWMENT EFFECT PAYWALL & ÇIKTI PAKETİ
+            with mid_right:
+                st.markdown(f"""
+                <div class="regtech-kpi-card kpi-neutral" style="height:255px;">
+                    <div class="kpi-label">TÜV / SGS Uyum Endeksi</div>
+                    <div class="kpi-value" style="color:var(--accent);">%{score} / 100</div>
+                    <div class="kpi-sub" style="margin-top:8px;">
+                        <strong>Türkiye Sektör Kıyas ({bm_thermo['label'][:24]}):</strong><br/>
+                        • Elektrik: <strong>P{elec_pct}</strong> ({res['elec_mwh_per_ton']:.2f} MWh/t)<br/>
+                        • Yakıt: <strong>P{fuel_pct}</strong> ({res['fuel_gj_per_ton']:.2f} GJ/t)<br/>
+                        • Bulgular: {crit_c} Kritik | {warn_c} Uyarı
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # 3. ALT SATIR: ÇIKTI & LİSANS BARİYERİ
             logo_b = broker_logo.getvalue() if broker_logo else None
-            pdf_out = generate_corporate_pdf_v8(meta_v8, res, {"score": score, "crit": crit_c, "warn": warn_c, "elec_pct": elec_pct, "fuel_pct": fuel_pct}, is_licensed=is_licensed, logo_bytes=logo_b)
+            pdf_out = generate_corporate_pdf_core(meta_obj, res, {"score": score, "crit": crit_c, "warn": warn_c, "elec_pct": elec_pct, "fuel_pct": fuel_pct}, is_licensed=is_licensed, logo_bytes=logo_b)
 
             if is_licensed:
-                st.success("✅ **Kurumsal Lisans Aktif:** Tüm resmi ve beyaz etiket (White-Label) belgeler indirmeye hazır.")
-                buyer_pdf_out = generate_eu_buyer_pitch_pdf(meta_v8, res, buyer_company)
-                eu_xlsx_out = generate_eu_communication_template_xlsx(meta_v8, res)
+                buyer_pdf_out = generate_eu_buyer_pitch_pdf(meta_obj, res, buyer_company)
+                eu_xlsx_out = generate_eu_communication_template_xlsx(meta_obj, res)
                 xml_row = dict(res)
                 xml_row["tonnage"] = eu_tonnage
-                xml_out = generate_cbam_xml_v8(meta_v8, [xml_row])
+                xml_out = generate_cbam_xml_core(meta_obj, [xml_row])
 
-                b1, b2 = st.columns(2)
-                b1.download_button("📥 Kurumsal Denetim Raporu (PDF)", data=pdf_out, file_name=f"TR_CBAM_Rapor_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
-                b2.download_button("🌍 AB Alıcı Teklif Belgesi (EN PDF)", data=buyer_pdf_out, file_name=f"EU_CBAM_Buyer_Offer_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
-                b3, b4 = st.columns(2)
-                b3.download_button("📗 AB Resmi İletişim Şablonu (.xlsx)", data=eu_xlsx_out, file_name=f"EU_CBAM_Comm_Template_{selected_cn}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-                b4.download_button("🧾 AB Registry O3CI v3.2 (.xml)", data=xml_out, file_name=f"EU_CBAM_O3CI_v32_{selected_cn}.xml", mime="application/xml", use_container_width=True)
+                c_out1, c_out2, c_out3, c_out4 = st.columns(4)
+                c_out1.download_button("📥 Kurumsal Rapor PDF", data=pdf_out, file_name=f"TR_CBAM_Rapor_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
+                c_out2.download_button("🌍 AB Alıcı Teklifi EN PDF", data=buyer_pdf_out, file_name=f"EU_CBAM_Buyer_Offer_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
+                c_out3.download_button("📗 AB İletişim Şablonu .xlsx", data=eu_xlsx_out, file_name=f"EU_CBAM_Comm_Template_{selected_cn}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+                c_out4.download_button("🧾 CBAM Registry .xml", data=xml_out, file_name=f"EU_CBAM_O3CI_{selected_cn}.xml", mime="application/xml", use_container_width=True)
             else:
                 st.markdown(f"""
-                <div class="paywall-box">
-                    <div style="font-weight:700; font-size:1rem; color:#0F2942;">🔒 Kurumsal Çıktı Paketi Kilitli</div>
-                    <div style="font-size:0.85rem; color:#334155; margin-top:6px;">
-                        <strong>{company_name}</strong> adına hesaplanan <strong>+{res['direct_savings']:,.0f} €</strong> maliyet avantajını belgeleyen
-                        filigransız İngilizce AB Alıcı Teklif PDF'ini, Resmi AB Excel İletişim Şablonunu (<code>.xlsx</code>) ve O3CI <code>.xml</code> dosyasını
-                        indirmek için sol menüden <strong>Kurumsal Lisans Anahtarınızı</strong> girin veya lisans talebi oluşturun.
+                <div class="paywall-card">
+                    <div style="font-weight:700; font-size:0.95rem;">🔒 Kurumsal Çıktı Paketi Kilitli</div>
+                    <div style="font-size:0.83rem; color:var(--text-secondary); margin-top:4px;">
+                        AB alıcınıza göndereceğiniz filigransız İngilizce Teklif PDF'ini, Resmi AB Excel İletişim Şablonunu (<code>.xlsx</code>) ve O3CI <code>.xml</code> dosyasını indirmek için sol menüden <strong>Kurumsal Lisans Anahtarınızı</strong> girin.
                     </div>
-                    <div class="blur-preview">
-                        <div style="font-weight:700; color:#0F2942; margin-bottom:4px;">📄 Önizleme: EU_CBAM_Buyer_Offer_{selected_cn}.pdf</div>
-                        <div>Prepared by: <strong>{company_name}</strong> | For: <strong>{buyer_company}</strong> | Direct Saving: <strong>+{res['direct_savings']:,.2f} EUR</strong></div>
-                        <div class="blurred-text">Installation ID: {installation_id} | Specific Embedded Emissions (SEE): {res['actual_see_per_ton']:.4f} tCO2e/t | Column A Benchmark: {res['col_a_bm']:.3f} | Verified O3CI v3.2 XML Payload Ready for Customs Clearance...</div>
+                    <div class="blur-sheet">
+                        <div><strong>📄 EU_CBAM_Buyer_Offer_{selected_cn}.pdf</strong> — Prepared by: {company_name} | For: {buyer_company} | Saving: +{res['direct_savings']:,.2f} EUR</div>
+                        <div class="blur-mask">Installation ID: {installation_id} | Actual SEE: {res['actual_see_per_ton']:.4f} tCO2e/t | Column A Benchmark: {res['col_a_bm']:.3f} | O3CI v3.2 XML Verified Payload...</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
                 st.write("")
-                st.download_button("📥 Filigranlı Taslak Ön-Analiz PDF İndir", data=pdf_out, file_name=f"TASLAK_TR_CBAM_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
+                st.download_button("📥 Taslak Ön-Analiz Raporu İndir (Filigranlı PDF)", data=pdf_out, file_name=f"TASLAK_TR_CBAM_{selected_cn}.pdf", mime="application/pdf", use_container_width=True)
 
             if vault_pass:
                 vault_bytes = encrypt_vault_payload(st.session_state["vault_data"], vault_pass)
                 st.download_button("🔐 Şifreli Tesis Kasasını İndir (.cbamvault)", data=vault_bytes, file_name=f"{company_name.replace(' ', '_')}_{yr_rule['year']}.cbamvault", mime="application/json", use_container_width=True)
 
-            with st.expander(f"🛡️ Verifier Ön-Kontrol Matrisi Detayları ({crit_c} Kritik, {warn_c} Uyarı, {pass_c} Onaylı)"):
+            with st.expander(f"🛡️ Denetçi Ön-Kontrol Matrisi Bulguları ({crit_c} Kritik, {warn_c} Uyarı, {pass_c} Onaylı)"):
                 for f_item in findings:
                     if f_item["level"] == "CRITICAL":
                         st.error(f"**[{f_item['code']}] {f_item['title']}:** {f_item['detail']}")
@@ -1374,7 +1468,7 @@ with tab5:
                 if p_cn_raw not in CATALOG:
                     p_cn_raw = "72071114"
 
-                r = calculate_cbam_v8(
+                r = calculate_cbam_core(
                     c_raw, rt, eu_t, tot_t,
                     {"dogalgaz": float(row.get("Dogalgaz_m3", 0.0))}, 0.0,
                     float(row.get("Elektrik_kWh", 0.0)), EU_DEFAULT_TR_GRID_EF,
@@ -1407,8 +1501,8 @@ with tab5:
                     "installation_id": installation_id, "unlocode": unlocode,
                     "coordinates": coordinates, "verifier_id": verifier_id, "year": yr_rule["year"]
                 }
-                b_xml = generate_cbam_xml_v8(meta_batch, batch_res)
-                st.download_button("🧾 Toplu Beyan İçin O3CI v3.2 XML İndir", data=b_xml, file_name=f"EU_CBAM_Batch_O3CI_v32_{yr_rule['year']}.xml", mime="application/xml", use_container_width=True)
+                b_xml = generate_cbam_xml_core(meta_batch, batch_res)
+                st.download_button("🧾 Toplu Beyan İçin O3CI v3.2 XML İndir", data=b_xml, file_name=f"EU_CBAM_Batch_O3CI_{yr_rule['year']}.xml", mime="application/xml", use_container_width=True)
             else:
                 st.info("🔒 Toplu beyan XML çıktısı kurumsal lisans anahtarı ile aktifleşir.")
         except Exception as e:
