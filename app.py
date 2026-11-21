@@ -181,18 +181,18 @@ def inject_design_system(theme_name: str, font_name: str):
         .stDeployButton, [data-testid="stToolbar"], [data-testid="collapsedControl"] {{ display: none !important; }}
         section[data-testid="stSidebar"] {{ display: none !important; }}
 
-        /* Ana Sayfa Arka Planı ve Sabit Üst Bar Boşluğu */
+        /* Ana Sayfa Arka Planı ve Sabit Üst Bar + Sekmeler İçin Üst Boşluk */
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
             background-color: {t['bg_canvas']} !important;
             color: {t['text_primary']} !important;
         }}
         .block-container {{
-            padding-top: 84px !important;
+            padding-top: 126px !important;
             padding-bottom: 2.5rem !important;
             max-width: 1460px;
         }}
 
-        /* ÜST ŞERİDİ EKRANIN TEPESİNE ÇİVİLE (FIXED TOPBAR) */
+        /* 1. ÜST ŞERİDİ EKRANIN EN TEPESİNE SABİTLE */
         [data-testid="stMainBlockContainer"] > div > div > div[data-testid="stHorizontalBlock"]:first-of-type,
         section.main .block-container > div > div > div[data-testid="stHorizontalBlock"]:first-of-type {{
             position: fixed !important;
@@ -200,15 +200,52 @@ def inject_design_system(theme_name: str, font_name: str):
             left: 0 !important;
             right: 0 !important;
             width: 100% !important;
+            height: 66px !important;
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
-            border-bottom: 2px solid {t['border']} !important;
-            padding: 10px 2.2rem !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+            padding: 10px 2.2rem 6px 2.2rem !important;
             align-items: center !important;
         }}
 
-        /* YAZI TİPİ VE RENK GÜVENCESİ (Material Icons/Symbols hariç tutulur!) */
+        /* 2. 6 SEKMELİ NAVİGASYON ÇUBUĞUNU ÜST ŞERİDİN HEMEN ALTINA SABİTLE */
+        .stTabs [data-baseweb="tab-list"] {{
+            position: fixed !important;
+            top: 66px !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 99998 !important;
+            background-color: {t['bg_card']} !important;
+            border-top: 1px solid {t['border']} !important;
+            border-bottom: 2px solid {t['border']} !important;
+            border-radius: 0px !important;
+            padding: 2px 2.2rem !important;
+            gap: 8px !important;
+            margin: 0 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10) !important;
+        }}
+        .stTabs [data-baseweb="tab-highlight"] {{
+            background-color: {t['accent']} !important;
+            height: 3px !important;
+        }}
+        .stTabs [data-baseweb="tab-border"] {{
+            display: none !important;
+        }}
+        .stTabs [data-baseweb="tab"],
+        .stTabs [data-baseweb="tab"] p {{
+            background-color: transparent !important;
+            color: {t['text_secondary']} !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+            padding: 8px 12px !important;
+            border: none !important;
+        }}
+        .stTabs [aria-selected="true"],
+        .stTabs [aria-selected="true"] p {{
+            color: {t['accent']} !important;
+        }}
+
+        /* YAZI TİPİ VE RENK GÜVENCESİ (Material Icons hariç tutulur) */
         .stApp p, .stApp label, .stApp input, .stApp textarea, .stApp select,
         .stApp h1, .stApp h2, .stApp h3, .stApp h4,
         [data-testid="stMarkdownContainer"] p,
@@ -221,15 +258,16 @@ def inject_design_system(theme_name: str, font_name: str):
             font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif !important;
         }}
 
-        /* İkon Fontlarını Koru (expand_more, arrow_right, upload bozulmasını önler) */
+        /* İkon Fontlarını Koru */
         [data-testid="stIconMaterial"], .material-symbols-rounded, .material-icons {{
             font-family: 'Material Symbols Rounded', 'Material Icons' !important;
             color: {t['text_primary']} !important;
         }}
 
-        /* Form Input, Selectbox ve Açılır Liste */
+        /* Form Input, Selectbox ve Sağ Ok Alanı Kontrastı */
         input, textarea, select,
         [data-baseweb="select"] > div,
+        [data-baseweb="select"] > div > div,
         [data-baseweb="input"] > div,
         [data-baseweb="base-input"] {{
             background-color: {t['bg_card']} !important;
@@ -244,18 +282,56 @@ def inject_design_system(theme_name: str, font_name: str):
             -webkit-text-fill-color: {t['text_primary']} !important;
             font-family: '{font_name}', sans-serif !important;
         }}
+        [data-baseweb="select"] svg {{
+            fill: {t['text_primary']} !important;
+        }}
+
+        /* Açılır Popover Pencereleri & Dropdown Listeleri (Karanlık Temada Beyaz Kalmasını Önler) */
+        [data-testid="stPopoverBody"],
+        [data-testid="stPopoverBody"] > div,
         div[data-baseweb="popover"],
         div[data-baseweb="popover"] > div,
         ul[role="listbox"],
         li[role="option"] {{
             background-color: {t['bg_card']} !important;
             color: {t['text_primary']} !important;
-            border-color: {t['border']} !important;
+            border: 1px solid {t['border']} !important;
+        }}
+        [data-testid="stPopoverBody"] p,
+        [data-testid="stPopoverBody"] span,
+        [data-testid="stPopoverBody"] label,
+        [data-testid="stPopoverBody"] small {{
+            color: {t['text_primary']} !important;
         }}
         li[role="option"]:hover,
         li[role="option"][aria-selected="true"] {{
             background-color: {t['bg_canvas']} !important;
             color: {t['accent']} !important;
+        }}
+
+        /* Tüm Popover Butonları (🔔 0, ⚙️ Dönem & ETS, 🎨 Görünüm), İndirme Butonları ve +/- Butonları */
+        .stButton > button[kind="secondary"],
+        .stDownloadButton > button,
+        [data-testid="stPopover"] button,
+        [data-testid="stPopoverButton"],
+        [data-testid="stNumberInput"] button {{
+            background-color: {t['bg_card']} !important;
+            color: {t['text_primary']} !important;
+            border: 1px solid {t['border']} !important;
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+        }}
+        .stDownloadButton > button p,
+        [data-testid="stPopover"] button p,
+        [data-testid="stPopoverButton"] p,
+        [data-testid="stPopoverButton"] span {{
+            color: {t['text_primary']} !important;
+            font-family: '{font_name}', sans-serif !important;
+        }}
+        .stDownloadButton > button:hover,
+        [data-testid="stPopover"] button:hover,
+        [data-testid="stPopoverButton"]:hover {{
+            border-color: {t['accent']} !important;
         }}
 
         /* Dosya Yükleme Alanı */
@@ -274,27 +350,6 @@ def inject_design_system(theme_name: str, font_name: str):
             background-color: {t['bg_card']} !important;
             color: {t['text_primary']} !important;
             border: 1px solid {t['border']} !important;
-        }}
-
-        /* İkincil Butonlar, İndirme Butonları, Popover ve +/- Butonları */
-        .stButton > button[kind="secondary"],
-        .stDownloadButton > button,
-        [data-testid="stPopover"] > button,
-        [data-testid="stNumberInput"] button {{
-            background-color: {t['bg_card']} !important;
-            color: {t['text_primary']} !important;
-            border: 1px solid {t['border']} !important;
-            border-radius: 6px !important;
-            font-weight: 600 !important;
-        }}
-        .stDownloadButton > button p,
-        [data-testid="stPopover"] > button p {{
-            color: {t['text_primary']} !important;
-            font-family: '{font_name}', sans-serif !important;
-        }}
-        .stDownloadButton > button:hover,
-        [data-testid="stPopover"] > button:hover {{
-            border-color: {t['accent']} !important;
         }}
 
         /* Expander Başlığı ve İçeriği */
@@ -317,13 +372,13 @@ def inject_design_system(theme_name: str, font_name: str):
             border: 1px solid {t['border']};
             border-left: 4px solid {t['accent']};
             border-radius: 8px;
-            padding: 8px 16px;
+            padding: 7px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 8px;
-            min-height: 44px;
+            min-height: 42px;
         }}
         .topbar-left {{
             display: flex;
@@ -353,36 +408,6 @@ def inject_design_system(theme_name: str, font_name: str):
             padding: 2px 10px;
             font-size: 0.72rem;
             font-weight: 600;
-        }}
-
-        /* Yatay Sekme Navigasyonu (Çift çizgiyi kaldırır, tek çizgi bırakır) */
-        .stTabs [data-baseweb="tab-list"] {{
-            background-color: {t['bg_card']} !important;
-            border: 1px solid {t['border']} !important;
-            border-radius: 8px !important;
-            padding: 4px 10px !important;
-            gap: 6px !important;
-            margin-top: 6px !important;
-        }}
-        .stTabs [data-baseweb="tab-highlight"] {{
-            background-color: {t['accent']} !important;
-            height: 3px !important;
-        }}
-        .stTabs [data-baseweb="tab-border"] {{
-            display: none !important;
-        }}
-        .stTabs [data-baseweb="tab"],
-        .stTabs [data-baseweb="tab"] p {{
-            background-color: transparent !important;
-            color: {t['text_secondary']} !important;
-            font-weight: 600 !important;
-            font-size: 0.85rem !important;
-            padding: 8px 12px !important;
-            border: none !important;
-        }}
-        .stTabs [aria-selected="true"],
-        .stTabs [aria-selected="true"] p {{
-            color: {t['accent']} !important;
         }}
 
         /* Modüler KPI Kartları */
@@ -1188,13 +1213,13 @@ if "last_audit_findings" not in st.session_state:
 
 vd = st.session_state["vault_data"]
 
-# --- TEK SATIRLIK SABİT (STICKY) ÜST BAŞLIK & KONTROL ŞERİDİ ---
-bar_left, bar_c1, bar_c2, bar_c3, bar_c4 = st.columns([2.35, 1.05, 0.90, 0.55, 0.85], gap="small")
+# --- TEK SATIRLIK SABİT (STICKY) ÜST BAŞLIK & MİNİMAL KONTROL ŞERİDİ ---
+bar_left, bar_c1, bar_c3, bar_c4 = st.columns([3.45, 0.72, 0.50, 0.85], gap="small")
 
 with bar_c1:
-    selected_theme_name = st.selectbox("Tema", list(THEMES.keys()), index=0, label_visibility="collapsed")
-with bar_c2:
-    selected_font_name = st.selectbox("Yazı Tipi", list(FONTS.keys()), index=0, label_visibility="collapsed")
+    with st.popover("🎨 Görünüm", use_container_width=True):
+        selected_theme_name = st.selectbox("Renk Paleti", list(THEMES.keys()), index=0)
+        selected_font_name = st.selectbox("Yazı Tipi", list(FONTS.keys()), index=0)
 
 inject_design_system(selected_theme_name, selected_font_name)
 active_theme = THEMES[selected_theme_name]
