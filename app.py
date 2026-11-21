@@ -1469,7 +1469,6 @@ with tab1:
                     tickfont=dict(color=active_theme["text_secondary"])
                 )
             )
-            )
             st.plotly_chart(fig, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
