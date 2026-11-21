@@ -187,14 +187,14 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['text_primary']} !important;
         }}
         .block-container {{
-            padding-top: 112px !important;
+            padding-top: 108px !important;
             padding-bottom: 2.5rem !important;
             max-width: 1460px;
         }}
 
-        /* 1. ÜST BAŞLIK + KONTROL ŞERİDİNİ EKRANIN EN TEPESİNE ÇİVİLE */
-        [data-testid="stMainBlockContainer"] > div > div > div[data-testid="stHorizontalBlock"]:first-of-type,
-        section.main .block-container > div > div > div[data-testid="stHorizontalBlock"]:first-of-type {{
+        /* ÜST ŞERİT + SEKME ÇUBUĞUNU TEK PARÇA HALİNDE EKRANIN TEPESİNE SABİTLE */
+        [data-testid="stMainBlockContainer"] > div > div > div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type,
+        section.main .block-container > div > div > div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type {{
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
@@ -202,52 +202,47 @@ def inject_design_system(theme_name: str, font_name: str):
             width: 100% !important;
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
-            padding: 8px 2.2rem !important;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10) !important;
-            align-items: center !important;
-        }}
-
-        /* 2. 6 SEKMELİ NAVİGASYONU HEMEN ÜST ŞERİDİN ALTINA SABİTLE (BOŞLUK BIRAKMADAN) */
-        .stTabs {{
-            margin-top: 0px !important;
-        }}
-        .stTabs [data-baseweb="tab-list"] {{
-            position: fixed !important;
-            top: 58px !important;
-            left: 0 !important;
-            right: 0 !important;
-            width: 100% !important;
-            z-index: 99998 !important;
-            background-color: {t['bg_card']} !important;
-            border-top: 1px solid {t['border']} !important;
+            border: none !important;
             border-bottom: 2px solid {t['border']} !important;
             border-radius: 0px !important;
-            padding: 2px 2.2rem !important;
-            gap: 8px !important;
-            margin: 0 !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
-        }}
-        .stTabs [data-baseweb="tab-highlight"] {{
-            background-color: {t['accent']} !important;
-            height: 3px !important;
-        }}
-        .stTabs [data-baseweb="tab-border"] {{
-            display: none !important;
-        }}
-        .stTabs [data-baseweb="tab"],
-        .stTabs [data-baseweb="tab"] p {{
-            background-color: transparent !important;
-            color: {t['text_secondary']} !important;
-            font-weight: 600 !important;
-            font-size: 0.85rem !important;
-            padding: 7px 12px !important;
-            border: none !important;
-        }}
-        .stTabs [aria-selected="true"],
-        .stTabs [aria-selected="true"] p {{
-            color: {t['accent']} !important;
+            padding: 8px 2.2rem 0px 2.2rem !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
         }}
 
+        /* YATAY SEKME NAVİGASYONU (st.radio tab bar tasarımı) */
+        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] > div {{
+            flex-direction: row !important;
+            gap: 4px !important;
+            background-color: {t['bg_card']} !important;
+            border: 1px solid {t['border']} !important;
+            border-bottom: none !important;
+            border-radius: 8px 8px 0px 0px !important;
+            padding: 4px 10px 0px 10px !important;
+            margin-top: 6px !important;
+        }}
+        /* Radio yuvarlak noktalarını gizle */
+        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] label > div:first-child {{
+            display: none !important;
+        }}
+        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] label {{
+            padding: 8px 14px !important;
+            margin: 0 !important;
+            border-bottom: 3px solid transparent !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease;
+        }}
+        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] label p {{
+            color: {t['text_secondary']} !important;
+            font-weight: 600 !important;
+            font-size: 0.86rem !important;
+        }}
+        /* Seçili Sekme Alt Çizgisi */
+        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] label:has(input:checked) {{
+            border-bottom: 3px solid {t['accent']} !important;
+        }}
+        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stRadio"] label:has(input:checked) p {{
+            color: {t['accent']} !important;
+        }}
         /* YAZI TİPİ VE RENK GÜVENCESİ (İkon span'larına dokunmaz, expand_more hatasını bitirir!) */
         .stApp p, .stApp label, .stApp input, .stApp textarea, .stApp select,
         .stApp h1, .stApp h2, .stApp h3, .stApp h4,
@@ -1220,74 +1215,87 @@ if "last_audit_findings" not in st.session_state:
 
 vd = st.session_state["vault_data"]
 
-# --- TEK SATIRLIK SABİT (STICKY) ÜST BAŞLIK & MİNİMAL KONTROL ŞERİDİ ---
-bar_left, bar_c1, bar_c3, bar_c4 = st.columns([3.10, 0.82, 0.58, 0.95], gap="small")
+broker_name = "TR-CBAM Kurumsal Uyum"
+broker_logo = None
+installation_id = vd["installation_id"]
+unlocode = vd["unlocode"]
+coordinates = vd["coordinates"]
+verifier_id = "PENDING-VERIFIER-2026"
+vault_pass = ""
 
-with bar_c1:
-    with st.popover("🎨 Görünüm", use_container_width=True):
-        selected_theme_name = st.selectbox("Renk Paleti", list(THEMES.keys()), index=0)
-        selected_font_name = st.selectbox("Yazı Tipi", list(FONTS.keys()), index=0)
+# --- SABİT ÜST KABUK (BAŞLIK + KONTROLLER + 6 SEKME TEK PARÇA) ---
+with st.container(border=True):
+    bar_left, bar_c1, bar_c3, bar_c4 = st.columns([3.10, 0.82, 0.58, 0.95], gap="small")
 
-inject_design_system(selected_theme_name, selected_font_name)
-active_theme = THEMES[selected_theme_name]
+    with bar_c1:
+        with st.popover("🎨 Görünüm", use_container_width=True):
+            selected_theme_name = st.selectbox("Renk Paleti", list(THEMES.keys()), index=0)
+            selected_font_name = st.selectbox("Yazı Tipi", list(FONTS.keys()), index=0)
 
-with bar_c3:
-    f_list = st.session_state.get("last_audit_findings", [])
-    crit_n = sum(1 for x in f_list if x["level"] == "CRITICAL")
-    bell_label = f"🔔 {crit_n}" if crit_n > 0 else "🔔 0"
-    with st.popover(bell_label, use_container_width=True):
-        st.markdown("**Denetçi Ön-Kontrol Bildirimleri**")
-        if not f_list:
-            st.caption("Sevkiyat analizi sonrası termodinamik ve mevzuat uyarıları burada görünür.")
-        else:
-            for item_f in f_list:
-                if item_f["level"] == "CRITICAL":
-                    st.error(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
-                elif item_f["level"] == "WARNING":
-                    st.warning(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
-                else:
-                    st.success(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
+    inject_design_system(selected_theme_name, selected_font_name)
+    active_theme = THEMES[selected_theme_name]
 
-with bar_c4:
-    with st.popover("⚙️ Dönem & ETS", use_container_width=True):
-        year_choice = st.selectbox("Beyan Yılı", list(YEAR_RULES.keys()))
-        yr_rule = YEAR_RULES[year_choice]
-        cbam_cert_price = st.number_input("AB ETS Karbon Fiyatı (€ / tCO₂e)", min_value=10.0, value=82.32, step=0.5)
-        if yr_rule["year"] in [2026, 2027]:
-            local_cp_eff = 0.0
-            st.caption("🇹🇷 TR-ETS 2026–2027 Mahsup: **0,00 €/tCO₂e**")
-        else:
-            local_cp_eff = st.number_input("TR-ETS Mahsup (€ / tCO₂e)", min_value=0.0, value=15.0, step=1.0)
+    with bar_c3:
+        f_list = st.session_state.get("last_audit_findings", [])
+        crit_n = sum(1 for x in f_list if x["level"] == "CRITICAL")
+        bell_label = f"🔔 {crit_n}" if crit_n > 0 else "🔔 0"
+        with st.popover(bell_label, use_container_width=True):
+            st.markdown("**Denetçi Ön-Kontrol Bildirimleri**")
+            if not f_list:
+                st.caption("Sevkiyat analizi sonrası termodinamik ve mevzuat uyarıları burada görünür.")
+            else:
+                for item_f in f_list:
+                    if item_f["level"] == "CRITICAL":
+                        st.error(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
+                    elif item_f["level"] == "WARNING":
+                        st.warning(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
+                    else:
+                        st.success(f"**[{item_f['code']}] {item_f['title']}:** {item_f['detail']}")
 
-with bar_left:
-    st.markdown(f"""
-    <div class="compact-topbar">
-        <div class="topbar-left">
-            <span class="brand-mark">TR-CBAM</span>
-            <span class="topbar-sep">|</span>
-            <span class="topbar-desc">AB Sınırda Karbon (SKDM) Uyum & Maliyet Koruma Platformu</span>
-            <span class="compliance-pill">● (EU) 2026/1740 Güncel</span>
+    with bar_c4:
+        with st.popover("⚙️ Dönem & ETS", use_container_width=True):
+            year_choice = st.selectbox("Beyan Yılı", list(YEAR_RULES.keys()))
+            yr_rule = YEAR_RULES[year_choice]
+            cbam_cert_price = st.number_input("AB ETS Karbon Fiyatı (€ / tCO₂e)", min_value=10.0, value=82.32, step=0.5)
+            if yr_rule["year"] in [2026, 2027]:
+                local_cp_eff = 0.0
+                st.caption("🇹🇷 TR-ETS 2026–2027 Mahsup: **0,00 €/tCO₂e**")
+            else:
+                local_cp_eff = st.number_input("TR-ETS Mahsup (€ / tCO₂e)", min_value=0.0, value=15.0, step=1.0)
+
+    with bar_left:
+        st.markdown(f"""
+        <div class="compact-topbar">
+            <div class="topbar-left">
+                <span class="brand-mark">TR-CBAM</span>
+                <span class="topbar-sep">|</span>
+                <span class="topbar-desc">AB Sınırda Karbon (SKDM) Uyum & Maliyet Koruma Platformu</span>
+                <span class="compliance-pill">● (EU) 2026/1740 Güncel</span>
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); font-family:'JetBrains Mono',monospace;">
+                ETS: <strong>{cbam_cert_price:.2f} €</strong>
+            </div>
         </div>
-        <div style="font-size:0.78rem; color:var(--text-secondary); font-family:'JetBrains Mono',monospace;">
-            ETS: <strong>{cbam_cert_price:.2f} €</strong>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-# --- 6 ANA MODÜL YATAY SEKME NAVİGASYONU ---
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "Sevkiyat & Ceza Analizi",
-    "Gümrük Müşaviri Referral",
-    "ERP Veri Aktarımı",
-    "Tedarikçi (Precursor) Portalı",
-    "Çoklu Sevkiyat & 50t Eşiği",
-    "Resmi Katalog"
-])
+    active_tab = st.radio(
+        "Navigasyon",
+        [
+            "Sevkiyat & Ceza Analizi",
+            "Gümrük Müşaviri Referral",
+            "ERP Veri Aktarımı",
+            "Tedarikçi (Precursor) Portalı",
+            "Çoklu Sevkiyat & 50t Eşiği",
+            "Resmi Katalog"
+        ],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
 
 # ==============================================================================
 # SEKME 1: SEVKİYAT & CEZA ANALİZİ
 # ==============================================================================
-with tab1:
+if active_tab == "Sevkiyat & Ceza Analizi":
     col_left, col_right = st.columns([1.08, 1.82], gap="large")
 
     with col_left:
@@ -1601,7 +1609,7 @@ with tab1:
 # ==============================================================================
 # SEKME 2: GÜMRÜK MÜŞAVİRİ REFERRAL
 # ==============================================================================
-with tab2:
+elif active_tab == "Gümrük Müşaviri Referral":
     st.subheader("📨 Gümrük Müşaviri Sıfır-Sorumluluk Müşteri Yönlendirme (Referral)")
     st.caption("Gümrük müşavirliklerinin müteselsil sorumluluk veya teknik danışmanlık yükü almadan ihracatçı müşterilerine 2026 SKDM Risk Özeti iletmesini sağlar.")
 
@@ -1636,7 +1644,7 @@ Saygılarımızla,
 # ==============================================================================
 # SEKME 3: ERP VERİ AKTARIMI
 # ==============================================================================
-with tab3:
+elif active_tab == "ERP Veri Aktarımı":
     st.subheader("🔌 Logo Tiger / Mikro / Netsis / SAP Hızlı Veri Aktarım Modülü")
     erp_type = st.selectbox("Kaynak ERP / Muhasebe Sistemi", ["Logo Tiger / Go3", "Mikro Yazılım", "Netsis", "SAP S/4HANA (MM/PP)", "Diğer Özel Excel / CSV"])
     erp_file = st.file_uploader(f"{erp_type} Dışa Aktarım Dosyasını Yükle (.xlsx / .csv)", type=["xlsx", "csv"])
@@ -1665,7 +1673,7 @@ with tab3:
 # ==============================================================================
 # SEKME 4: TEDARİKÇİ (PRECURSOR) PORTALI
 # ==============================================================================
-with tab4:
+elif active_tab == "Tedarikçi (Precursor) Portalı":
     st.subheader("🤝 Tedarikçi Emisyon Veri Portalı (Precursor Network Effect)")
     t_col1, t_col2 = st.columns(2, gap="large")
     with t_col1:
@@ -1706,7 +1714,7 @@ Saygılarımızla,
 # ==============================================================================
 # SEKME 5: ÇOKLU SEVKİYAT & 50 TON EŞİĞİ
 # ==============================================================================
-with tab5:
+elif active_tab == "Çoklu Sevkiyat & 50t Eşiği":
     st.subheader("📊 Çoklu Sevkiyat Analizi & (EU) 2025/2083 Madde 2a Kümülatif 50 Ton Kontrolü")
     sample_df = pd.DataFrame([
         {"Urun_Adi": "Sıcak Haddelenmiş Sac", "CN_Kodu": "72085120", "Rota": "(E)", "Tesis_Uretim_Ton": 1000.0, "AB_Sevkiyat_Ton": 30.0, "Dogalgaz_m3": 18000.0, "Elektrik_kWh": 150000.0, "Oncul_CN": "72071114", "Oncul_mi": 1.05},
@@ -1780,7 +1788,7 @@ with tab5:
 # ==============================================================================
 # SEKME 6: RESMİ KATALOG (570 CN KODU)
 # ==============================================================================
-with tab6:
+elif active_tab == "Resmi Katalog":
     st.subheader("📚 Avrupa Komisyonu Resmi 2026 Kesin Dönem Türkiye & Benchmark Kataloğu (570 CN Kodu)")
     cat_rows = []
     for cn_8, v in CATALOG.items():
