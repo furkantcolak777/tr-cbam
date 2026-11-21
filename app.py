@@ -44,49 +44,32 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header[data-testid="stHeader"] {
-        background: rgba(248, 250, 252, 0.85);
-        backdrop-filter: blur(8px);
+        background-color: transparent !important;
     }
     .main .block-container {
-        padding-top: 1.6rem;
+        padding-top: 1.4rem;
         padding-bottom: 2.5rem;
         max-width: 1380px;
     }
-    div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 14px 18px;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    }
-    div[data-testid="stMetric"] label {
-        font-size: 0.82rem !important;
-        font-weight: 600 !important;
-        color: #475569 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        font-size: 1.55rem !important;
-        font-weight: 700 !important;
-        color: #0f172a !important;
-    }
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: #f1f5f9;
+        background-color: #1e293b;
         padding: 6px;
         border-radius: 10px;
+        border: 1px solid #334155;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 8px;
         padding: 8px 16px;
         font-weight: 600;
         font-size: 0.9rem;
+        color: #cbd5e1 !important;
+        background-color: transparent !important;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #ffffff !important;
-        color: #0f172a !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        background-color: #0f172a !important;
+        color: #10b981 !important;
+        border: 1px solid #10b981 !important;
     }
     .hero-banner {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -94,6 +77,7 @@ st.markdown("""
         padding: 20px 26px;
         border-radius: 12px;
         margin-bottom: 18px;
+        border: 1px solid #334155;
         border-left: 5px solid #10b981;
     }
     .hero-banner h1 {
