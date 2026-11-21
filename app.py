@@ -200,49 +200,6 @@ def inject_design_system(theme_name: str, font_name: str):
                 padding: 8px 1.1rem 6px 1.1rem !important;
             }}
         }}
-        @media (max-width: 768px) {{
-            .st-key-fixed_header_shell {{
-                position: relative !important;
-                top: auto !important;
-                padding: 8px 0.7rem !important;
-                margin-bottom: 12px !important;
-            }}
-            .main .block-container, .block-container {{
-                padding-top: 0.5rem !important;
-            }}
-            /* Sağdaki 3 küçük butona sabit minimum genişlik ver ve ikon/yazı taşmasını önle */
-            .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                gap: 4px !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="column"] {{
-                min-width: auto !important;
-                flex: 0 0 auto !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="column"]:first-child {{
-                flex: 1 1 auto !important;
-                min-width: 0 !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
-                padding: 4px 8px !important;
-                min-width: 42px !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="stPopoverButton"] p {{
-                font-size: 0.78rem !important;
-                white-space: nowrap !important;
-            }}
-            .topbar-desc, .topbar-sep, .compliance-pill {{
-                display: none !important;
-            }}
-            .compact-topbar {{
-                padding: 6px 10px !important;
-                min-height: 36px !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="stRadio"] {{
-                display: none !important;
-            }}
-        }}
 
         .st-key-fixed_header_shell {{
             position: fixed !important;
@@ -536,6 +493,42 @@ def inject_design_system(theme_name: str, font_name: str):
             font-weight: 600 !important;
             border-radius: 8px !important;
             padding: 0.45rem 1rem !important;
+        }}
+    @media (max-width: 768px) {{
+            .st-key-fixed_header_shell {{
+                position: relative !important;
+                top: auto !important;
+                padding: 8px 0.75rem !important;
+                margin-bottom: 10px !important;
+            }}
+            .block-container {{
+                padding-top: 0.5rem !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                gap: 6px !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stColumn"] {{
+                width: auto !important;
+                min-width: fit-content !important;
+                flex: 0 0 auto !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stColumn"]:first-child {{
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
+                padding: 5px 10px !important;
+                min-width: 58px !important;
+            }}
+            .topbar-desc, .topbar-sep, .compliance-pill {{
+                display: none !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stRadio"] {{
+                display: none !important;
+            }}
         }}
     </style>
     """, unsafe_allow_html=True)
