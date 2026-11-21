@@ -203,20 +203,40 @@ def inject_design_system(theme_name: str, font_name: str):
         @media (max-width: 768px) {{
             .st-key-fixed_header_shell {{
                 position: relative !important;
-                padding: 8px 0.8rem !important;
-                margin-bottom: 10px !important;
+                padding: 8px 0.7rem !important;
+                margin-bottom: 8px !important;
             }}
             .block-container {{
-                padding-top: 0.8rem !important;
+                padding-top: 0.6rem !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stRadio"] > div {{
+            /* Üst bardaki başlık ve ikonları alt alta yığma, tek satırda tut */
+            .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
                 flex-wrap: nowrap !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch;
+                align-items: center !important;
+                gap: 4px !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stRadio"] label {{
-                white-space: nowrap !important;
-                flex-shrink: 0 !important;
+            .st-key-fixed_header_shell [data-testid="column"] {{
+                min-width: 0 !important;
+                flex: 1 1 auto !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="column"]:first-child {{
+                flex: 3 1 auto !important;
+            }}
+            .topbar-desc, .topbar-sep {{
+                display: none !important;
+            }}
+            .compact-topbar {{
+                padding: 6px 10px !important;
+                min-height: 38px !important;
+            }}
+            /* Mobilde 6'lı açık listeyi gizle, sadece "☰ Modüller" açılır menüsünü göster */
+            .st-key-fixed_header_shell [data-testid="stRadio"] {{
+                display: none !important;
+            }}
+        }}
+        @media (min-width: 769px) {{
+            .st-key-mobile_nav_box {{
+                display: none !important;
             }}
         }}
 
@@ -1345,6 +1365,31 @@ with st.container(key="fixed_header_shell"):
         horizontal=True,
         label_visibility="collapsed"
     )
+
+    with st.container(key="mobile_nav_box"):
+        with st.popover("☰ Modüller: " + active_tab, use_container_width=True):
+            mob_tab = st.radio(
+                "Modül Seçin",
+                [
+                    "Sevkiyat & Ceza Analizi",
+                    "Gümrük Müşaviri Referral",
+                    "ERP Veri Aktarımı",
+                    "Tedarikçi (Precursor) Portalı",
+                    "Çoklu Sevkiyat & 50t Eşiği",
+                    "Resmi Katalog"
+                ],
+                index=[
+                    "Sevkiyat & Ceza Analizi",
+                    "Gümrük Müşaviri Referral",
+                    "ERP Veri Aktarımı",
+                    "Tedarikçi (Precursor) Portalı",
+                    "Çoklu Sevkiyat & 50t Eşiği",
+                    "Resmi Katalog"
+                ].index(active_tab),
+                label_visibility="collapsed"
+            )
+            if mob_tab != active_tab:
+                active_tab = mob_tab
 
 # ==============================================================================
 # SEKME 1: SEVKİYAT & CEZA ANALİZİ
