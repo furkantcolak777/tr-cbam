@@ -182,9 +182,6 @@ def inject_design_system(theme_name: str, font_name: str):
         section[data-testid="stSidebar"] {{ display: none !important; }}
 
         /* Ana Sayfa Arka Planı */
-        .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
-            background-color: {t['bg_canvas']} !important;
-            color: {t['text_primary']} !important;
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], section.main {{
             overflow: visible !important;
         }}
