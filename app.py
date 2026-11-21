@@ -155,8 +155,6 @@ FONTS = {
 def inject_design_system(theme_name: str, font_name: str):
     t = THEMES[theme_name]
     font_query = FONTS[font_name]
-    input_bg = t["bg_canvas"]
-    input_text = t["text_primary"]
 
     st.markdown(f"""
     <style>
@@ -178,82 +176,96 @@ def inject_design_system(theme_name: str, font_name: str):
             --border: {t['border']};
         }}
 
-        /* Ham Streamlit kalıntılarını ve sidebar'ı gizle (Sayfayla birlikte kayar, sabit kalmaz) */
+        /* Ham Streamlit kalıntılarını ve sidebar'ı gizle */
         #MainMenu, footer, header[data-testid="stHeader"] {{ display: none !important; }}
         .stDeployButton, [data-testid="stToolbar"], [data-testid="collapsedControl"] {{ display: none !important; }}
         section[data-testid="stSidebar"] {{ display: none !important; }}
 
-        .stApp {{
-            background-color: var(--bg-canvas) !important;
-            color: var(--text-primary) !important;
+        /* Ana Sayfa ve Üst Boşluk (Sabit üst şerit için 76px boşluk bırakır) */
+        .stApp, [data-testid="stAppViewContainer"], .main {{
+            background-color: {t['bg_canvas']} !important;
+            color: {t['text_primary']} !important;
             font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif !important;
         }}
         .block-container {{
-            padding-top: 0.75rem !important;
+            padding-top: 76px !important;
             padding-bottom: 2.5rem !important;
             max-width: 1460px;
         }}
-        h1, h2, h3, h4, p, label, span, div {{
+
+        /* ÜST ŞERİDİ EKRANIN TEPESİNE SABİTLE (FIXED HEADER) */
+        div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"]:first-of-type {{
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 99999 !important;
+            background-color: {t['bg_canvas']} !important;
+            border-bottom: 2px solid {t['border']} !important;
+            padding: 10px 2rem !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+            align-items: center !important;
+        }}
+
+        /* TÜM METİN ETİKETLERİNİ ZORLA (Aydınlık temada beyaz kalan yazıları kesin çözer) */
+        .stApp p, .stApp span, .stApp label, .stApp div,
+        .stApp h1, .stApp h2, .stApp h3, .stApp h4,
+        [data-testid="stMarkdownContainer"] *,
+        [data-testid="stWidgetLabel"] *,
+        [data-baseweb="radio"] *,
+        [data-baseweb="checkbox"] * {{
+            color: {t['text_primary']} !important;
             font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif;
         }}
-        .stMarkdown, .stText, label {{
-            color: var(--text-primary) !important;
-        }}
 
-        /* Üst Başlık & Tema Kontrol Barını Sayfa Kaydırıldığında Sabit Tut (Sticky) */
-        div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"]:first-of-type {{
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 999 !important;
-            background-color: var(--bg-canvas) !important;
-            padding: 8px 0px 10px 0px !important;
-            border-bottom: 1px solid var(--border) !important;
-            margin-bottom: 6px !important;
-        }}
-
-        /* Form Input, Selectbox ve Açılır Liste Kontrast Güvencesi */
+        /* Form Input, Selectbox ve Açılır Liste Kontrastı */
         input, textarea, select,
         [data-baseweb="select"] > div,
         [data-baseweb="input"] > div,
         [data-baseweb="base-input"] {{
-            background-color: var(--bg-card) !important;
-            color: var(--text-primary) !important;
-            border-color: var(--border) !important;
+            background-color: {t['bg_card']} !important;
+            color: {t['text_primary']} !important;
+            border-color: {t['border']} !important;
             border-radius: 6px !important;
         }}
         [data-baseweb="select"] span,
         [data-baseweb="select"] div,
         input::placeholder {{
-            color: var(--text-primary) !important;
-            -webkit-text-fill-color: var(--text-primary) !important;
+            color: {t['text_primary']} !important;
+            -webkit-text-fill-color: {t['text_primary']} !important;
         }}
-        [data-baseweb="popover"],
-        [data-baseweb="popover"] ul,
-        [role="listbox"],
-        [role="option"] {{
-            background-color: var(--bg-card) !important;
-            color: var(--text-primary) !important;
+        [data-baseweb="select"] svg {{
+            fill: {t['text_primary']} !important;
         }}
-        [role="option"]:hover {{
-            background-color: var(--bg-canvas) !important;
+
+        /* Açılır Dropdown ve Popover Pencereleri (Body altında açılan portallar) */
+        div[data-baseweb="popover"],
+        div[data-baseweb="popover"] > div,
+        ul[role="listbox"],
+        li[role="option"] {{
+            background-color: {t['bg_card']} !important;
+            color: {t['text_primary']} !important;
+            border-color: {t['border']} !important;
+        }}
+        li[role="option"]:hover,
+        li[role="option"][aria-selected="true"] {{
+            background-color: {t['bg_canvas']} !important;
+            color: {t['accent']} !important;
         }}
 
         /* Dosya Yükleme Alanı (st.file_uploader) */
         [data-testid="stFileUploader"] section,
         [data-testid="stFileUploaderDropzone"] {{
-            background-color: var(--bg-canvas) !important;
-            border: 1px dashed var(--border) !important;
-            color: var(--text-primary) !important;
+            background-color: {t['bg_canvas']} !important;
+            border: 1px dashed {t['border']} !important;
+            color: {t['text_primary']} !important;
             border-radius: 8px !important;
         }}
-        [data-testid="stFileUploader"] section *,
-        [data-testid="stFileUploaderDropzone"] * {{
-            color: var(--text-primary) !important;
-        }}
         [data-testid="stFileUploader"] button {{
-            background-color: var(--bg-card) !important;
-            color: var(--text-primary) !important;
-            border: 1px solid var(--border) !important;
+            background-color: {t['bg_card']} !important;
+            color: {t['text_primary']} !important;
+            border: 1px solid {t['border']} !important;
         }}
 
         /* İkincil Butonlar, İndirme Butonları, Popover ve Sayı +/- Butonları */
@@ -261,44 +273,36 @@ def inject_design_system(theme_name: str, font_name: str):
         .stDownloadButton > button,
         [data-testid="stPopover"] > button,
         [data-testid="stNumberInput"] button {{
-            background-color: var(--bg-card) !important;
-            color: var(--text-primary) !important;
-            border: 1px solid var(--border) !important;
+            background-color: {t['bg_card']} !important;
+            color: {t['text_primary']} !important;
+            border: 1px solid {t['border']} !important;
             border-radius: 6px !important;
             font-weight: 600 !important;
         }}
-        .stButton > button[kind="secondary"] *,
-        .stDownloadButton > button *,
-        [data-testid="stPopover"] > button *,
-        [data-testid="stNumberInput"] button * {{
-            color: var(--text-primary) !important;
-        }}
         .stDownloadButton > button:hover,
         [data-testid="stPopover"] > button:hover {{
-            border-color: var(--accent) !important;
-            color: var(--accent) !important;
+            border-color: {t['accent']} !important;
+            color: {t['accent']} !important;
         }}
 
-        /* Expander Başlığı ve İçeriği (Koyu Arka Plan Sızıntısını Engeller) */
+        /* Expander Başlığı ve İçeriği */
         [data-testid="stExpander"],
         [data-testid="stExpander"] details,
         [data-testid="stExpander"] summary {{
-            background-color: var(--bg-card) !important;
-            border-color: var(--border) !important;
-            color: var(--text-primary) !important;
+            background-color: {t['bg_card']} !important;
+            border: 1px solid {t['border']} !important;
+            color: {t['text_primary']} !important;
             border-radius: 8px !important;
         }}
-        [data-testid="stExpander"] summary *,
         [data-testid="stExpander"] summary svg {{
-            color: var(--text-primary) !important;
-            fill: var(--text-primary) !important;
+            fill: {t['text_primary']} !important;
         }}
 
         /* Kompakt, Tek Satırlık Üst Başlık Şeridi */
         .compact-topbar {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--accent);
+            background-color: {t['bg_card']};
+            border: 1px solid {t['border']};
+            border-left: 4px solid {t['accent']};
             border-radius: 8px;
             padding: 8px 16px;
             display: flex;
@@ -317,22 +321,22 @@ def inject_design_system(theme_name: str, font_name: str):
         .brand-mark {{
             font-weight: 700;
             font-size: 1.02rem;
-            color: var(--text-primary);
+            color: {t['text_primary']} !important;
             letter-spacing: 0.02em;
         }}
         .topbar-sep {{
-            color: var(--text-secondary);
+            color: {t['text_secondary']} !important;
             opacity: 0.45;
         }}
         .topbar-desc {{
             font-size: 0.84rem;
             font-weight: 500;
-            color: var(--text-secondary);
+            color: {t['text_secondary']} !important;
         }}
         .compliance-pill {{
-            background-color: var(--success-bg);
-            color: var(--success);
-            border: 1px solid var(--success);
+            background-color: {t['success_bg']} !important;
+            color: {t['success']} !important;
+            border: 1px solid {t['success']} !important;
             border-radius: 999px;
             padding: 2px 10px;
             font-size: 0.72rem;
@@ -340,22 +344,22 @@ def inject_design_system(theme_name: str, font_name: str):
             white-space: nowrap;
         }}
 
-        /* Yatay Sekme Navigasyonu (Pasif Sekmelerin Beyaz Kalmasını Önler) */
+        /* Yatay Sekme Navigasyonu (6 Sekme) */
         .stTabs [data-baseweb="tab-list"] {{
-            background-color: var(--bg-card) !important;
-            border: 1px solid var(--border) !important;
+            background-color: {t['bg_card']} !important;
+            border: 1px solid {t['border']} !important;
             border-radius: 8px !important;
-            padding: 3px 8px !important;
+            padding: 4px 10px !important;
             gap: 6px !important;
-            margin-top: 4px !important;
+            margin-top: 6px !important;
         }}
         .stTabs [data-baseweb="tab"],
         .stTabs [data-baseweb="tab"] p,
         .stTabs [data-baseweb="tab"] span {{
             background-color: transparent !important;
-            color: var(--text-secondary) !important;
+            color: {t['text_secondary']} !important;
             font-weight: 600 !important;
-            font-size: 0.84rem !important;
+            font-size: 0.85rem !important;
             padding: 8px 12px !important;
             border-bottom: 2px solid transparent !important;
             border-radius: 0px !important;
@@ -363,34 +367,34 @@ def inject_design_system(theme_name: str, font_name: str):
         .stTabs [aria-selected="true"],
         .stTabs [aria-selected="true"] p,
         .stTabs [aria-selected="true"] span {{
-            color: var(--accent) !important;
-            border-bottom: 2px solid var(--accent) !important;
+            color: {t['accent']} !important;
+            border-bottom: 3px solid {t['accent']} !important;
         }}
 
         /* Modüler KPI ve İçerik Kartları */
         .data-card {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
+            background-color: {t['bg_card']};
+            border: 1px solid {t['border']};
             border-radius: 8px;
             padding: 16px 18px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
             height: 100%;
         }}
         .card-danger {{
-            border-top: 3px solid var(--danger);
-            background: linear-gradient(180deg, var(--danger-bg) 0%, var(--bg-card) 50%);
+            border-top: 3px solid {t['danger']};
+            background: linear-gradient(180deg, {t['danger_bg']} 0%, {t['bg_card']} 50%);
         }}
         .card-neutral {{
-            border-top: 3px solid var(--accent);
+            border-top: 3px solid {t['accent']};
         }}
         .card-success {{
-            border-top: 3px solid var(--success);
-            background: linear-gradient(180deg, var(--success-bg) 0%, var(--bg-card) 60%);
+            border-top: 3px solid {t['success']};
+            background: linear-gradient(180deg, {t['success_bg']} 0%, {t['bg_card']} 60%);
         }}
         .card-title {{
             font-size: 0.76rem;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: {t['text_secondary']} !important;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             margin-bottom: 8px;
@@ -417,17 +421,22 @@ def inject_design_system(theme_name: str, font_name: str):
         }}
         .card-note {{
             font-size: 0.76rem;
-            color: var(--text-secondary);
+            color: {t['text_secondary']} !important;
             margin-top: 7px;
         }}
 
-        /* Buton Stilleri */
-        .stButton > button[kind="primary"], .stFormSubmitButton > button {{
-            background-color: var(--accent) !important;
-            color: var(--accent-text) !important;
+        /* Birincil Aksiyon Butonları (Beyaz Yazı Korumalı) */
+        .stButton > button[kind="primary"],
+        .stFormSubmitButton > button,
+        .stButton > button[kind="primary"] *,
+        .stFormSubmitButton > button * {{
+            background-color: {t['accent']} !important;
+            color: {t['accent_text']} !important;
             border: none !important;
             font-weight: 600 !important;
             border-radius: 6px !important;
+        }}
+        .stFormSubmitButton > button {{
             padding: 0.55rem 1rem !important;
         }}
     </style>
