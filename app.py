@@ -200,25 +200,25 @@ def inject_design_system(theme_name: str, font_name: str):
                 padding: 8px 1.1rem 6px 1.1rem !important;
             }}
         }}
-        @media (max-width: 768px) {
-            .st-key-fixed_header_shell {
+        @media (max-width: 768px) {{
+            .st-key-fixed_header_shell {{
                 position: relative !important;
                 padding: 8px 0.8rem !important;
                 margin-bottom: 10px !important;
-            }
-            .block-container {
+            }}
+            .block-container {{
                 padding-top: 0.8rem !important;
-            }
-            .st-key-fixed_header_shell [data-testid="stRadio"] > div {
+            }}
+            .st-key-fixed_header_shell [data-testid="stRadio"] > div {{
                 flex-wrap: nowrap !important;
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch;
-            }
-            .st-key-fixed_header_shell [data-testid="stRadio"] label {
+            }}
+            .st-key-fixed_header_shell [data-testid="stRadio"] label {{
                 white-space: nowrap !important;
                 flex-shrink: 0 !important;
-            }
-        }
+            }}
+        }}
 
         .st-key-fixed_header_shell {{
             position: fixed !important;
