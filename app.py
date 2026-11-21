@@ -186,9 +186,24 @@ def inject_design_system(theme_name: str, font_name: str):
             min-height: 100vh !important;
         }}
         .block-container {{
-            padding-top: 130px !important;
+            padding-top: 132px !important;
             padding-bottom: 3rem !important;
             max-width: 1400px;
+        }}
+
+        /* Küçük Laptop ve Mobil Ekranlarda Sabit Üst Kabuk Taşma Koruması */
+        @media (max-width: 1150px) {{
+            .block-container {{
+                padding-top: 195px !important;
+            }}
+            .st-key-fixed_header_shell {{
+                padding: 8px 1.1rem 6px 1.1rem !important;
+            }}
+        }}
+        @media (max-width: 680px) {{
+            .block-container {{
+                padding-top: 265px !important;
+            }}
         }}
 
         .st-key-fixed_header_shell {{
@@ -1004,67 +1019,84 @@ def generate_eu_communication_template_xlsx(meta, res):
     wb.save(out)
     return out.getvalue()
 
-# --- AB ALICISINA ÖZEL İNGİLİZCE SİPARİŞ & MARJ KORUMA TEKLİF PDF'İ ---
+# --- SIFIR ÇÖKME GARANTİLİ TÜRKÇE / UNICODE PDF YARDIMCILARI ---
+def _safe_pdf_text(text: str, has_unicode_font: bool) -> str:
+    if has_unicode_font:
+        return str(text)
+    tr_map = str.maketrans({
+        "ş": "s", "Ş": "S", "ğ": "g", "Ğ": "G",
+        "ı": "i", "İ": "I", "ü": "u", "Ü": "U",
+        "ö": "o", "Ö": "O", "ç": "c", "Ç": "C",
+        "₂": "2", "³": "3", "∑": "Sum", "€": "EUR", "—": "-", "•": "-"
+    })
+    return str(text).translate(tr_map).encode("latin-1", "replace").decode("latin-1")
+
 def setup_unicode_font(pdf):
-    if os.path.exists("DejaVuSans.ttf"):
-        pdf.add_font("TrFont", "", "DejaVuSans.ttf")
-        pdf.add_font("TrFont", "B", "DejaVuSans-Bold.ttf" if os.path.exists("DejaVuSans-Bold.ttf") else "DejaVuSans.ttf")
-        pdf.add_font("TrFont", "I", "DejaVuSans-Oblique.ttf" if os.path.exists("DejaVuSans-Oblique.ttf") else "DejaVuSans.ttf")
-        return "TrFont"
-    return "Helvetica"
+    candidates = [
+        ("DejaVuSans.ttf", "DejaVuSans-Bold.ttf", "DejaVuSans-Oblique.ttf"),
+        ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf"),
+    ]
+    for reg, bold, ital in candidates:
+        if os.path.exists(reg):
+            pdf.add_font("TrFont", "", reg)
+            pdf.add_font("TrFont", "B", bold if os.path.exists(bold) else reg)
+            pdf.add_font("TrFont", "I", ital if os.path.exists(ital) else reg)
+            return "TrFont", True
+    return "Helvetica", False
 
 def generate_eu_buyer_pitch_pdf(meta, res, buyer_company="EU Importer / Customer GmbH"):
     pdf = FPDF()
     pdf.add_page()
-    font_name = setup_unicode_font(pdf)
+    font_name, has_uni = setup_unicode_font(pdf)
+    t = lambda s: _safe_pdf_text(s, has_uni)
 
     pdf.set_fill_color(15, 23, 42)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font(font_name, "B", 11)
-    pdf.cell(0, 11, "EU CBAM VERIFIED COST ADVANTAGE & SUPPLIER COMPLIANCE BRIEF", ln=True, align="C", fill=True)
+    pdf.cell(0, 11, t("EU CBAM VERIFIED COST ADVANTAGE & SUPPLIER COMPLIANCE BRIEF"), ln=True, align="C", fill=True)
 
     pdf.set_text_color(71, 85, 105)
     pdf.set_font(font_name, "", 8.2)
-    pdf.cell(0, 6, f"Prepared by: {meta['company_name']} (Türkiye)  |  For: {buyer_company}  |  Reporting Year: {meta['year']}", ln=True, align="C")
+    pdf.cell(0, 6, t(f"Prepared by: {meta['company_name']} (Türkiye)  |  For: {buyer_company}  |  Reporting Year: {meta['year']}"), ln=True, align="C")
     pdf.ln(4)
 
     pdf.set_text_color(15, 23, 42)
     pdf.set_font(font_name, "B", 10)
-    pdf.cell(0, 6, "EXECUTIVE SUMMARY FOR EU IMPORT PROCUREMENT & COMPLIANCE", ln=True)
+    pdf.cell(0, 6, t("EXECUTIVE SUMMARY FOR EU IMPORT PROCUREMENT & COMPLIANCE"), ln=True)
     pdf.set_font(font_name, "", 8.8)
-    pdf.multi_cell(0, 5, f"Under the EU Carbon Border Adjustment Mechanism (CBAM) Definitive Regime (Reg. (EU) 2023/956 & IR (EU) 2026/1740), EU importers declaring goods without installation-specific emission data face punitive default values (+{res['markup_pct']}% mark-up in {meta['year']}). By sourcing from {meta['company_name']}, your import customs declaration benefits from installation-specific primary emission tracking:")
+    pdf.multi_cell(0, 5, t(f"Under the EU Carbon Border Adjustment Mechanism (CBAM) Definitive Regime (Reg. (EU) 2023/956 & IR (EU) 2026/1740), EU importers declaring goods without installation-specific emission data face punitive default values (+{res['markup_pct']}% mark-up in {meta['year']}). By sourcing from {meta['company_name']}, your import customs declaration benefits from installation-specific primary emission tracking:"))
     pdf.ln(3)
 
     pdf.set_fill_color(241, 245, 249)
     pdf.set_font(font_name, "B", 8.5)
-    pdf.cell(85, 7, "CBAM Declaration Basis", border=1, fill=True)
-    pdf.cell(35, 7, "SEE (tCO2e/t)", border=1, align="C", fill=True)
-    pdf.cell(35, 7, "Net Certificates", border=1, align="C", fill=True)
-    pdf.cell(35, 7, "CBAM Cost (EUR)", border=1, align="R", fill=True, ln=True)
+    pdf.cell(85, 7, t("CBAM Declaration Basis"), border=1, fill=True)
+    pdf.cell(35, 7, t("SEE (tCO2e/t)"), border=1, align="C", fill=True)
+    pdf.cell(35, 7, t("Net Certificates"), border=1, align="C", fill=True)
+    pdf.cell(35, 7, t("CBAM Cost (EUR)"), border=1, align="R", fill=True, ln=True)
 
     pdf.set_font(font_name, "", 8.5)
-    pdf.cell(85, 7, f"EU Default Value (+{res['markup_pct']}% Mark-up)", border=1)
-    pdf.cell(35, 7, f"{res['default_ef_markup']:.3f}", border=1, align="C")
-    pdf.cell(35, 7, f"{res['net_cert_default']:,.2f}", border=1, align="C")
-    pdf.cell(35, 7, f"{res['tax_default']:,.2f} EUR", border=1, align="R", ln=True)
+    pdf.cell(85, 7, t(f"EU Default Value (+{res['markup_pct']}% Mark-up)"), border=1)
+    pdf.cell(35, 7, t(f"{res['default_ef_markup']:.3f}"), border=1, align="C")
+    pdf.cell(35, 7, t(f"{res['net_cert_default']:,.2f}"), border=1, align="C")
+    pdf.cell(35, 7, t(f"{res['tax_default']:,.2f} EUR"), border=1, align="R", ln=True)
 
-    pdf.cell(85, 7, f"{meta['company_name']} Actual Data", border=1)
-    pdf.cell(35, 7, f"{res['actual_see_per_ton']:.3f}", border=1, align="C")
-    pdf.cell(35, 7, f"{res['net_cert_actual']:,.2f}", border=1, align="C")
-    pdf.cell(35, 7, f"{res['tax_actual']:,.2f} EUR", border=1, align="R", ln=True)
+    pdf.cell(85, 7, t(f"{meta['company_name']} Actual Data"), border=1)
+    pdf.cell(35, 7, t(f"{res['actual_see_per_ton']:.3f}"), border=1, align="C")
+    pdf.cell(35, 7, t(f"{res['net_cert_actual']:,.2f}"), border=1, align="C")
+    pdf.cell(35, 7, t(f"{res['tax_actual']:,.2f} EUR"), border=1, align="R", ln=True)
 
     pdf.set_font(font_name, "B", 9.5)
     pdf.set_fill_color(220, 252, 231)
-    pdf.cell(155, 8.5, f"DIRECT CBAM IMPORT COST SAVING FOR {buyer_company.upper()} ({meta['tonnage']:,.1f} t)", border=1, fill=True)
-    pdf.cell(35, 8.5, f"+{res['direct_savings']:,.2f} EUR", border=1, align="R", fill=True, ln=True)
+    pdf.cell(155, 8.5, t(f"DIRECT CBAM IMPORT COST SAVING FOR {buyer_company.upper()} ({meta['tonnage']:,.1f} t)"), border=1, fill=True)
+    pdf.cell(35, 8.5, t(f"+{res['direct_savings']:,.2f} EUR"), border=1, align="R", fill=True, ln=True)
     pdf.ln(3)
 
     pdf.set_font(font_name, "B", 9)
-    pdf.cell(0, 6, f"Unit Import Cost Advantage: +{res['savings_per_ton_eur']:,.2f} EUR saved per tonne imported", ln=True)
+    pdf.cell(0, 6, t(f"Unit Import Cost Advantage: +{res['savings_per_ton_eur']:,.2f} EUR saved per tonne imported"), ln=True)
     pdf.set_font(font_name, "", 8.2)
-    pdf.cell(0, 5, f"• CN Code: {res['cn']} ({res['desc'][:65]})", ln=True)
-    pdf.cell(0, 5, f"• Installation ID: {meta['installation_id']} | UN/LOCODE: {meta['unlocode']} | Production Route: {res['route_tag']}", ln=True)
-    pdf.cell(0, 5, f"• Advisory & Verification Partner: {meta['broker_name']}", ln=True)
+    pdf.cell(0, 5, t(f"• CN Code: {res['cn']} ({res['desc'][:65]})"), ln=True)
+    pdf.cell(0, 5, t(f"• Installation ID: {meta['installation_id']} | UN/LOCODE: {meta['unlocode']} | Production Route: {res['route_tag']}"), ln=True)
+    pdf.cell(0, 5, t(f"• Advisory & Verification Partner: {meta['broker_name']}"), ln=True)
 
     return bytes(pdf.output())
 
@@ -1111,7 +1143,8 @@ def generate_cbam_xml_core(meta, results_list):
 def generate_corporate_pdf_core(meta, res, audit_summary, logo_bytes=None):
     pdf = FPDF()
     pdf.add_page()
-    font_name = setup_unicode_font(pdf)
+    font_name, has_uni = setup_unicode_font(pdf)
+    t = lambda s: _safe_pdf_text(s, has_uni)
 
     temp_logo = None
     if logo_bytes:
@@ -1128,66 +1161,66 @@ def generate_corporate_pdf_core(meta, res, audit_summary, logo_bytes=None):
     pdf.set_fill_color(15, 23, 42)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font(font_name, "B", 10.6)
-    pdf.cell(0, 10.5, f"{meta['broker_name'].upper()} | AB SKDM KESİN DÖNEM DENETİM RAPORU", ln=True, align="C", fill=True)
+    pdf.cell(0, 10.5, t(f"{meta['broker_name'].upper()} | AB SKDM KESİN DÖNEM DENETİM RAPORU"), ln=True, align="C", fill=True)
 
     pdf.set_text_color(80, 80, 80)
     pdf.set_font(font_name, "", 7.8)
-    pdf.cell(0, 5.5, f"Tarih: {datetime.now().strftime('%d.%m.%Y %H:%M')}  |  Tesis ID: {meta['installation_id']}  |  Denetim Hazırlık Skoru: %{audit_summary['score']}", ln=True, align="C")
+    pdf.cell(0, 5.5, t(f"Tarih: {datetime.now().strftime('%d.%m.%Y %H:%M')}  |  Tesis ID: {meta['installation_id']}  |  Denetim Hazırlık Skoru: %{audit_summary['score']}"), ln=True, align="C")
     pdf.ln(3)
 
     pdf.set_text_color(0, 0, 0)
     pdf.set_font(font_name, "B", 9.3)
-    pdf.cell(0, 5.8, "1. TESİS KİMLİĞİ, ÜRETİM ROTASI VE KAPSAM BİLGİLERİ", ln=True)
+    pdf.cell(0, 5.8, t("1. TESİS KİMLİĞİ, ÜRETİM ROTASI VE KAPSAM BİLGİLERİ"), ln=True)
     pdf.set_font(font_name, "", 8.2)
-    pdf.cell(0, 4.7, f"İhracatçı Kuruluş: {meta['company_name']}  |  UN/LOCODE: {meta['unlocode']}  |  Koordinat: {meta['coordinates']}", ln=True)
-    pdf.cell(0, 4.7, f"CN Kodu: {res['cn']} — {res['desc'][:66]}", ln=True)
-    pdf.cell(0, 4.7, f"Sektör: {res['sector']}  |  Üretim Rotası: {ROUTE_LABELS.get(res['route_tag'], res['route_tag'])}", ln=True)
-    pdf.cell(0, 4.7, f"Tesis Üretimi: {res['eff_total_prod']:,.2f} t  |  AB Sevkiyatı: {meta['tonnage']:,.2f} t (Pay: %{res['eu_share_pct']:.1f})  |  Fonk. Oran: %{res['func_ratio']*100:.1f}", ln=True)
+    pdf.cell(0, 4.7, t(f"İhracatçı Kuruluş: {meta['company_name']}  |  UN/LOCODE: {meta['unlocode']}  |  Koordinat: {meta['coordinates']}"), ln=True)
+    pdf.cell(0, 4.7, t(f"CN Kodu: {res['cn']} — {res['desc'][:66]}"), ln=True)
+    pdf.cell(0, 4.7, t(f"Sektör: {res['sector']}  |  Üretim Rotası: {ROUTE_LABELS.get(res['route_tag'], res['route_tag'])}"), ln=True)
+    pdf.cell(0, 4.7, t(f"Tesis Üretimi: {res['eff_total_prod']:,.2f} t  |  AB Sevkiyatı: {meta['tonnage']:,.2f} t (Pay: %{res['eu_share_pct']:.1f})  |  Fonk. Oran: %{res['func_ratio']*100:.1f}"), ln=True)
     pdf.ln(2.5)
 
     pdf.set_fill_color(241, 245, 249)
     pdf.set_font(font_name, "B", 9.3)
-    pdf.cell(0, 6.8, "2. AB SKDM SERTİFİKA YÜKÜMLÜLÜĞÜ KIYASLAMASI ((EU) 2025/2620 & 2026/2498)", ln=True, fill=True)
+    pdf.cell(0, 6.8, t("2. AB SKDM SERTİFİKA YÜKÜMLÜLÜĞÜ KIYASLAMASI ((EU) 2025/2620 & 2026/2498)"), ln=True, fill=True)
     pdf.ln(1.2)
 
     pdf.set_font(font_name, "B", 7.8)
-    pdf.cell(72, 6.4, "Beyan Senaryosu", border=1)
-    pdf.cell(38, 6.4, "Gömülü Emisyon", border=1, align="C")
-    pdf.cell(40, 6.4, "Net Sertifika (Adet)", border=1, align="C")
-    pdf.cell(40, 6.4, "Ödenecek Tutar", border=1, align="R", ln=True)
+    pdf.cell(72, 6.4, t("Beyan Senaryosu"), border=1)
+    pdf.cell(38, 6.4, t("Gömülü Emisyon"), border=1, align="C")
+    pdf.cell(40, 6.4, t("Net Sertifika (Adet)"), border=1, align="C")
+    pdf.cell(40, 6.4, t("Ödenecek Tutar"), border=1, align="R", ln=True)
 
     pdf.set_font(font_name, "", 7.8)
-    pdf.cell(72, 6.4, f"A: Kanıtsız Default (+%{res['markup_pct']} Marj | Col B)", border=1)
-    pdf.cell(38, 6.4, f"{res['default_total_em']:,.2f} tCO2e", border=1, align="C")
-    pdf.cell(40, 6.4, f"{res['net_cert_default']:,.2f}", border=1, align="C")
-    pdf.cell(40, 6.4, f"{res['tax_default']:,.2f} EUR", border=1, align="R", ln=True)
+    pdf.cell(72, 6.4, t(f"A: Kanıtsız Default (+%{res['markup_pct']} Marj | Col B)"), border=1)
+    pdf.cell(38, 6.4, t(f"{res['default_total_em']:,.2f} tCO2e"), border=1, align="C")
+    pdf.cell(40, 6.4, t(f"{res['net_cert_default']:,.2f}"), border=1, align="C")
+    pdf.cell(40, 6.4, t(f"{res['tax_default']:,.2f} EUR"), border=1, align="R", ln=True)
 
-    pdf.cell(72, 6.4, "B: Kanıtlı Gerçek Veri (Col A + Precursor)", border=1)
-    pdf.cell(38, 6.4, f"{res['actual_total_em']:,.2f} tCO2e", border=1, align="C")
-    pdf.cell(40, 6.4, f"{res['net_cert_actual']:,.2f}", border=1, align="C")
-    pdf.cell(40, 6.4, f"{res['tax_actual']:,.2f} EUR", border=1, align="R", ln=True)
+    pdf.cell(72, 6.4, t("B: Kanıtlı Gerçek Veri (Col A + Precursor)"), border=1)
+    pdf.cell(38, 6.4, t(f"{res['actual_total_em']:,.2f} tCO2e"), border=1, align="C")
+    pdf.cell(40, 6.4, t(f"{res['net_cert_actual']:,.2f}"), border=1, align="C")
+    pdf.cell(40, 6.4, t(f"{res['tax_actual']:,.2f} EUR"), border=1, align="R", ln=True)
 
     pdf.set_font(font_name, "B", 8.9)
     pdf.set_fill_color(220, 252, 231)
-    pdf.cell(150, 7.8, "DOĞRUDAN KORUNAN NET SKDM SERTİFİKA TASARRUFU (A - B)", border=1, fill=True)
-    pdf.cell(40, 7.8, f"+{res['direct_savings']:,.2f} EUR", border=1, align="R", ln=True, fill=True)
+    pdf.cell(150, 7.8, t("DOĞRUDAN KORUNAN NET SKDM SERTİFİKA TASARRUFU (A - B)"), border=1, fill=True)
+    pdf.cell(40, 7.8, t(f"+{res['direct_savings']:,.2f} EUR"), border=1, align="R", ln=True, fill=True)
     pdf.ln(2.5)
 
     pdf.set_font(font_name, "B", 9.3)
-    pdf.cell(0, 5.8, "3. ANNEX III EMİSYON KIRILIMI & TERMODİNAMİK KIYAS ÖZETİ", ln=True)
+    pdf.cell(0, 5.8, t("3. ANNEX III EMİSYON KIRILIMI & TERMODİNAMİK KIYAS ÖZETİ"), ln=True)
     pdf.set_font(font_name, "", 8.1)
-    pdf.cell(0, 4.6, f"• Tesis Doğrudan Emisyonu (ae_g): {res['ae_g_per_ton']:.4f} tCO2e/t  |  Öncül Hammadde (∑ m_i x SEE_i): {res['prec_see_per_ton']:.4f} tCO2e/t", ln=True)
-    pdf.cell(0, 4.6, f"• Türkiye Sektör Persentil Konumu: Elektrik P{audit_summary['elec_pct']} ({res['elec_mwh_per_ton']:.3f} MWh/t) | Yakıt P{audit_summary['fuel_pct']} ({res['fuel_gj_per_ton']:.2f} GJ/t)", ln=True)
-    pdf.cell(0, 4.6, f"• Gerçek Veri Ücretsiz Tahsisat (Col A BM={res['col_a_bm']:.3f} + Precursor SEFA): -{res['faa_actual_total']:,.2f} tCO2e", ln=True)
-    pdf.cell(0, 4.6, f"• Verifier Ön-Kontrol Matrisi ((EU) 2025/2547): Skor %{audit_summary['score']} ({audit_summary['crit']} Kritik, {audit_summary['warn']} Uyarı)", ln=True)
+    pdf.cell(0, 4.6, t(f"• Tesis Doğrudan Emisyonu (ae_g): {res['ae_g_per_ton']:.4f} tCO2e/t  |  Öncül Hammadde (∑ m_i x SEE_i): {res['prec_see_per_ton']:.4f} tCO2e/t"), ln=True)
+    pdf.cell(0, 4.6, t(f"• Türkiye Sektör Persentil Konumu: Elektrik P{audit_summary['elec_pct']} ({res['elec_mwh_per_ton']:.3f} MWh/t) | Yakıt P{audit_summary['fuel_pct']} ({res['fuel_gj_per_ton']:.2f} GJ/t)"), ln=True)
+    pdf.cell(0, 4.6, t(f"• Gerçek Veri Ücretsiz Tahsisat (Col A BM={res['col_a_bm']:.3f} + Precursor SEFA): -{res['faa_actual_total']:,.2f} tCO2e"), ln=True)
+    pdf.cell(0, 4.6, t(f"• Verifier Ön-Kontrol Matrisi ((EU) 2025/2547): Skor %{audit_summary['score']} ({audit_summary['crit']} Kritik, {audit_summary['warn']} Uyarı)"), ln=True)
     pdf.ln(2)
 
     pdf.set_font(font_name, "B", 8.2)
-    pdf.cell(0, 5, f"Düzenleyen Kuruluş / Danışman: {meta['broker_name']}  |  Doğrulayıcı ID: {meta['verifier_id']}", ln=True)
+    pdf.cell(0, 5, t(f"Düzenleyen Kuruluş / Danışman: {meta['broker_name']}  |  Doğrulayıcı ID: {meta['verifier_id']}"), ln=True)
     pdf.ln(1)
     pdf.set_font(font_name, "", 6.9)
     pdf.set_text_color(75, 75, 75)
-    pdf.multi_cell(0, 3.6, "Mevzuat & Veri Güvenliği Beyanı: Bu rapor (EU) 2023/956, (EU) 2025/2083, (EU) 2025/2547, (EU) 2025/2620, (EU) 2025/2621, (EU) 2026/1740 ve (EU) 2026/2498 sayılı AB SKDM tüzüklerine uygun hazırlanmıştır. Tesis verileri istemci parolasıyla AES-256 şifreli .cbamvault dosyasında saklanır.")
+    pdf.multi_cell(0, 3.6, t("Mevzuat & Veri Güvenliği Beyanı: Bu rapor (EU) 2023/956, (EU) 2025/2083, (EU) 2025/2547, (EU) 2025/2620, (EU) 2025/2621, (EU) 2026/1740 ve (EU) 2026/2498 sayılı AB SKDM tüzüklerine uygun hazırlanmıştır. Tesis verileri istemci parolasıyla AES-256 şifreli .cbamvault dosyasında saklanır."))
 
     out_bytes = bytes(pdf.output())
     if temp_logo and os.path.exists(temp_logo):
@@ -1426,8 +1459,10 @@ if active_tab == "Sevkiyat & Ceza Analizi":
                     try:
                         loaded_dict = decrypt_vault_payload(uploaded_vault.getvalue(), vault_pass)
                         st.session_state["vault_data"].update(loaded_dict)
-                        vd = st.session_state["vault_data"]
-                        st.success(f"Kasa yüklendi: {vd['company_name']}")
+                        if "cached_run" in st.session_state:
+                            del st.session_state["cached_run"]
+                        st.success(f"Kasa yüklendi: {st.session_state['vault_data']['company_name']}")
+                        st.rerun()
                     except Exception:
                         st.error("Parola hatalı veya kasa dosyası bozuk.")
 
