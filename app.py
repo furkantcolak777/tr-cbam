@@ -187,7 +187,7 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['text_primary']} !important;
         }}
         .block-container {{
-            padding-top: 66px !important;
+            padding-top: 112px !important;
             padding-bottom: 2.5rem !important;
             max-width: 1460px;
         }}
@@ -202,7 +202,6 @@ def inject_design_system(theme_name: str, font_name: str):
             width: 100% !important;
             z-index: 99999 !important;
             background-color: {t['bg_canvas']} !important;
-            border-bottom: 1px solid {t['border']} !important;
             padding: 8px 2.2rem !important;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10) !important;
             align-items: center !important;
@@ -213,16 +212,20 @@ def inject_design_system(theme_name: str, font_name: str):
             margin-top: 0px !important;
         }}
         .stTabs [data-baseweb="tab-list"] {{
-            position: sticky !important;
+            position: fixed !important;
             top: 58px !important;
-            z-index: 99990 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 99998 !important;
             background-color: {t['bg_card']} !important;
-            border: 1px solid {t['border']} !important;
-            border-radius: 8px !important;
-            padding: 3px 10px !important;
-            gap: 6px !important;
-            margin-bottom: 14px !important;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+            border-top: 1px solid {t['border']} !important;
+            border-bottom: 2px solid {t['border']} !important;
+            border-radius: 0px !important;
+            padding: 2px 2.2rem !important;
+            gap: 8px !important;
+            margin: 0 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
         }}
         .stTabs [data-baseweb="tab-highlight"] {{
             background-color: {t['accent']} !important;
@@ -1273,12 +1276,12 @@ with bar_left:
 
 # --- 6 ANA MODÜL YATAY SEKME NAVİGASYONU ---
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "1. Sevkiyat & Ceza Analizi",
-    "2. Gümrük Müşaviri Referral",
-    "3. ERP Veri Aktarımı",
-    "4. Tedarikçi (Precursor) Portalı",
-    "5. Çoklu Sevkiyat & 50t Eşiği",
-    "6. Resmi Katalog"
+    "Sevkiyat & Ceza Analizi",
+    "Gümrük Müşaviri Referral",
+    "ERP Veri Aktarımı",
+    "Tedarikçi (Precursor) Portalı",
+    "Çoklu Sevkiyat & 50t Eşiği",
+    "Resmi Katalog"
 ])
 
 # ==============================================================================
