@@ -311,6 +311,20 @@ def inject_design_system(theme_name: str, font_name: str):
             color: {t['accent']} !important;
         }}
 
+        /* Popover ve Uyarı Kutularında (st.success / st.warning / st.error) Okunaklı Kontrast */
+        [data-testid="stPopoverBody"] [data-testid="stAlert"],
+        [data-testid="stPopoverBody"] [data-testid="stAlert"] > div {{
+            background-color: {t['bg_canvas']} !important;
+            border: 1px solid {t['border']} !important;
+            color: {t['text_primary']} !important;
+        }}
+        [data-testid="stPopoverBody"] [data-testid="stAlert"] p,
+        [data-testid="stPopoverBody"] [data-testid="stAlert"] span,
+        [data-testid="stPopoverBody"] [data-testid="stAlert"] strong {{
+            color: {t['text_primary']} !important;
+            -webkit-text-fill-color: {t['text_primary']} !important;
+        }}
+
         /* Popover Butonları (🎨 Görünüm, 🔔 0, ⚙️ Dönem & ETS), İndirme ve +/- Butonları */
         .stButton > button[kind="secondary"],
         .stDownloadButton > button,
