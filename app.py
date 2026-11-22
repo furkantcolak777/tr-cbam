@@ -177,6 +177,7 @@ def inject_design_system(theme_name: str, font_name: str):
         }}
 
         #MainMenu, footer, header[data-testid="stHeader"] {{ display: none !important; }}
+        [data-testid="stSkipLink"], a[href="#main-content"] {{ display: none !important; }}
         .stDeployButton, [data-testid="stToolbar"], [data-testid="collapsedControl"] {{ display: none !important; }}
         section[data-testid="stSidebar"] {{ display: none !important; }}
 
@@ -527,7 +528,14 @@ def inject_design_system(theme_name: str, font_name: str):
             }}
             .st-key-fixed_header_shell [data-testid="stColumn"]:first-child {{
                 flex: 1 1 auto !important;
-                min-width: 0 !important;
+                min-width: 85px !important;
+                overflow: hidden !important;
+            }}
+            .compact-topbar {{
+                overflow: hidden !important;
+            }}
+            .brand-mark {{
+                font-size: 0.92rem !important;
             }}
             .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
                 padding: 5px 10px !important;
