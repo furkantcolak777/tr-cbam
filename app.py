@@ -158,6 +158,7 @@ def inject_design_system(theme_name: str, font_name: str):
 
     st.markdown(f"""
     <style>
+
     [data-testid="stAlert"],
     [data-testid="stAlert"] > div {{
         background-color: {t['bg_card']} !important;
@@ -177,7 +178,7 @@ def inject_design_system(theme_name: str, font_name: str):
             fill: {t['accent']} !important;
             color: {t['accent']} !important;
         }}
-        @import url('https://fonts.googleapis.com/css2?family={font_query}&family=JetBrains+Mono:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family={font_query}&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
         :root {{
             --shell-bg: {t['shell_bg']};
@@ -271,15 +272,37 @@ def inject_design_system(theme_name: str, font_name: str):
             font-weight: 600 !important;
         }}
 
-        .stApp p, .stApp label, .stApp input, .stApp textarea, .stApp select,
-        .stApp h1, .stApp h2, .stApp h3, .stApp h4,
-        [data-testid="stMarkdownContainer"] p,
-        [data-testid="stMarkdownContainer"] strong,
-        [data-testid="stWidgetLabel"] p,
-        [data-baseweb="radio"] label div,
-        [data-baseweb="checkbox"] label div {{
-            color: {t['text_primary']} !important;
-            font-family: '{font_name}', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        /* GLOBAL DYNAMIC FONT SYSTEM */
+        .stApp,
+        .stApp p,
+        .stApp span,
+        .stApp label,
+        .stApp input,
+        .stApp textarea,
+        .stApp select,
+        .stApp button,
+        .stApp h1,
+        .stApp h2,
+        .stApp h3,
+        .stApp h4,
+        .stApp h5,
+        .stApp h6,
+        .stApp li,
+        .stApp td,
+        .stApp th,
+        .stApp a,
+        .stApp [data-testid="stMarkdownContainer"],
+        .stApp [data-testid="stMarkdownContainer"] *,
+        .stApp [data-testid="stWidgetLabel"] *,
+        .stApp [data-baseweb="radio"] label div,
+        .stApp [data-baseweb="checkbox"] label div {{
+            font-family: '{font_name}', sans-serif !important;
+        }}
+
+        /* Teknik kod alanları */
+        .stApp code,
+        .stApp pre {{
+            font-family: 'JetBrains Mono', monospace !important;
         }}
 
         [data-testid="stIconMaterial"],
@@ -1396,7 +1419,12 @@ with st.container(key="fixed_header_shell"):
     with bar_c1:
         with st.popover("🎨 Tema", use_container_width=True):
             selected_theme_name = st.selectbox("Renk Paleti", list(THEMES.keys()), index=0)
-            selected_font_name = st.selectbox("Yazı Tipi", list(FONTS.keys()), index=0)
+            selected_font_name = st.selectbox(
+                "Yazı Tipi",
+                list(FONTS.keys()),
+                index=0,
+                key="global_font_selector"
+            )
 
     inject_design_system(selected_theme_name, selected_font_name)
     active_theme = THEMES[selected_theme_name]
