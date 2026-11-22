@@ -503,7 +503,6 @@ def inject_design_system(theme_name: str, font_name: str):
                 padding-top: 145px !important;
             }}
         }}
-
         @media (max-width: 768px) {{
             .st-key-fixed_header_shell {{
                 position: relative !important;
@@ -517,29 +516,21 @@ def inject_design_system(theme_name: str, font_name: str):
             .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
                 display: flex !important;
                 flex-direction: row !important;
-                flex-wrap: nowrap !important;
+                flex-wrap: wrap !important;
                 align-items: center !important;
                 gap: 6px !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stColumn"] {{
-                width: auto !important;
-                min-width: fit-content !important;
-                flex: 0 0 auto !important;
-            }}
             .st-key-fixed_header_shell [data-testid="stColumn"]:first-child {{
-                flex: 1 1 auto !important;
-                min-width: 85px !important;
-                overflow: hidden !important;
+                width: 100% !important;
+                flex: 1 1 100% !important;
             }}
-            .compact-topbar {{
-                overflow: hidden !important;
-            }}
-            .brand-mark {{
-                font-size: 0.92rem !important;
+            .st-key-fixed_header_shell [data-testid="stColumn"]:not(:first-child) {{
+                flex: 1 1 0 !important;
+                min-width: 0 !important;
             }}
             .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
-                padding: 5px 10px !important;
-                min-width: 58px !important;
+                padding: 5px 8px !important;
+                width: 100% !important;
             }}
             .topbar-desc, .topbar-sep, .compliance-pill {{
                 display: none !important;
@@ -547,8 +538,9 @@ def inject_design_system(theme_name: str, font_name: str):
             .compact-topbar {{
                 flex-wrap: nowrap !important;
                 white-space: nowrap !important;
-                padding: 6px 10px !important;
-                min-height: 36px !important;
+                overflow: visible !important;
+                padding: 7px 12px !important;
+                min-height: 38px !important;
             }}
             .compact-topbar > div:last-child {{
                 display: none !important;
