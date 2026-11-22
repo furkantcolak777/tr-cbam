@@ -507,15 +507,16 @@ def inject_design_system(theme_name: str, font_name: str):
             .st-key-fixed_header_shell {{
                 position: relative !important;
                 top: auto !important;
-                padding: 8px 0.75rem 6px 0.75rem !important;
-                margin-bottom: 10px !important;
+                padding: 8px 0.75rem !important;
+                margin-bottom: 8px !important;
             }}
             .block-container {{
                 padding-top: 0.6rem !important;
             }}
-            .st-key-fixed_header_shell > div > [data-testid="stVerticalBlock"],
-            .st-key-fixed_header_shell [data-testid="stVerticalBlock"] {{
-                gap: 4px !important;
+            .st-key-fixed_header_shell [data-testid="stVerticalBlock"],
+            .st-key-fixed_header_shell [data-testid="stVerticalBlock"] > div {{
+                gap: 0px !important;
+                row-gap: 0px !important;
             }}
             .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
                 display: flex !important;
@@ -523,26 +524,18 @@ def inject_design_system(theme_name: str, font_name: str):
                 flex-wrap: wrap !important;
                 align-items: center !important;
                 gap: 6px !important;
+                margin-bottom: 6px !important;
             }}
             .st-key-fixed_header_shell [data-testid="stColumn"]:first-child {{
                 width: 100% !important;
                 flex: 1 1 100% !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stColumn"]:nth-child(2) {{
+            .st-key-fixed_header_shell [data-testid="stColumn"]:not(:first-child) {{
                 flex: 1 1 0 !important;
                 min-width: 0 !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stColumn"]:nth-child(3) {{
-                flex: 0.75 1 0 !important;
-                min-width: 0 !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="stColumn"]:nth-child(4) {{
-                flex: 1.45 1 0 !important;
-                min-width: 0 !important;
-            }}
             .st-key-fixed_header_shell [data-testid="stPopover"] {{
-                margin-top: 0px !important;
-                margin-bottom: 0px !important;
+                margin: 0px !important;
             }}
             .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
                 padding: 7px 6px !important;
@@ -566,19 +559,16 @@ def inject_design_system(theme_name: str, font_name: str):
             .compact-topbar > div:last-child {{
                 display: none !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stRadio"],
-            .st-key-fixed_header_shell .stRadio {{
+            /* Gizli radyo kutusunun yer kaplamasını sıfırla */
+            .st-key-fixed_header_shell > div > div > div:has([data-testid="stRadio"]) {{
                 display: none !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="stVerticalBlock"] {{
-                gap: 0px !important;
-            }}
-            .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
-                margin-bottom: 6px !important;
+                height: 0px !important;
+                min-height: 0px !important;
+                margin: 0px !important;
+                padding: 0px !important;
             }}
             .st-key-mobile_nav_box {{
                 margin-top: 0px !important;
-                padding-top: 0px !important;
             }}
         }}
         
