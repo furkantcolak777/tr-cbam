@@ -157,14 +157,15 @@ def inject_design_system(theme_name: str, font_name: str):
     font_query = FONTS[font_name]
 
     st.markdown(f"""
+    <style>
     [data-testid="stAlert"],
-        [data-testid="stAlert"] > div {{
-            background-color: {t['bg_card']} !important;
-            border: 1px solid color-mix(in srgb, {t['border']} 65%, transparent) !important;
-            border-left-width: 4px !important;
-            color: {t['text_primary']} !important;
-            border-radius: 10px !important;
-        }}
+    [data-testid="stAlert"] > div {{
+        background-color: {t['bg_card']} !important;
+        border: 1px solid color-mix(in srgb, {t['border']} 65%, transparent) !important;
+        border-left-width: 4px !important;
+        color: {t['text_primary']} !important;
+        border-radius: 10px !important;
+    }}
         [data-testid="stAlert"] p,
         [data-testid="stAlert"] span,
         [data-testid="stAlert"] strong,
@@ -176,7 +177,6 @@ def inject_design_system(theme_name: str, font_name: str):
             fill: {t['accent']} !important;
             color: {t['accent']} !important;
         }}
-    <style>
         @import url('https://fonts.googleapis.com/css2?family={font_query}&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
         :root {{
