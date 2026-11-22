@@ -494,7 +494,16 @@ def inject_design_system(theme_name: str, font_name: str):
             border-radius: 8px !important;
             padding: 0.45rem 1rem !important;
         }}
-    @media (max-width: 768px) {{
+    @media (min-width: 769px) {{
+            .st-key-mobile_nav_box {{
+                display: none !important;
+            }}
+            .block-container {{
+                padding-top: 145px !important;
+            }}
+        }}
+
+        @media (max-width: 768px) {{
             .st-key-fixed_header_shell {{
                 position: relative !important;
                 top: auto !important;
@@ -502,10 +511,11 @@ def inject_design_system(theme_name: str, font_name: str):
                 margin-bottom: 10px !important;
             }}
             .block-container {{
-                padding-top: 0.5rem !important;
+                padding-top: 0.6rem !important;
             }}
             .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
                 display: flex !important;
+                flex-direction: row !important;
                 flex-wrap: nowrap !important;
                 align-items: center !important;
                 gap: 6px !important;
@@ -524,6 +534,15 @@ def inject_design_system(theme_name: str, font_name: str):
                 min-width: 58px !important;
             }}
             .topbar-desc, .topbar-sep, .compliance-pill {{
+                display: none !important;
+            }}
+            .compact-topbar {{
+                flex-wrap: nowrap !important;
+                white-space: nowrap !important;
+                padding: 6px 10px !important;
+                min-height: 36px !important;
+            }}
+            .compact-topbar > div:last-child {{
                 display: none !important;
             }}
             .st-key-fixed_header_shell [data-testid="stRadio"] {{
