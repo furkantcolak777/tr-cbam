@@ -566,12 +566,19 @@ def inject_design_system(theme_name: str, font_name: str):
             .compact-topbar > div:last-child {{
                 display: none !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stRadio"] {{
+            .st-key-fixed_header_shell [data-testid="stRadio"],
+            .st-key-fixed_header_shell .stRadio {{
                 display: none !important;
             }}
+            .st-key-fixed_header_shell [data-testid="stVerticalBlock"] {{
+                gap: 0px !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
+                margin-bottom: 6px !important;
+            }}
             .st-key-mobile_nav_box {{
-                transform: translateY(-15px) !important;
-                margin-bottom: -15px !important;
+                margin-top: 0px !important;
+                padding-top: 0px !important;
             }}
         }}
         
