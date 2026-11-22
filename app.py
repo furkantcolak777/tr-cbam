@@ -570,7 +570,8 @@ def inject_design_system(theme_name: str, font_name: str):
                 display: none !important;
             }}
             .st-key-mobile_nav_box {{
-                margin-top: -12px !important;
+                transform: translateY(-15px) !important;
+                margin-bottom: -15px !important;
             }}
         }}
         
