@@ -224,8 +224,8 @@ def inject_design_system(theme_name: str, font_name: str):
             background-color: {t['bg_card']} !important;
             border: 1px solid color-mix(in srgb, {t['border']} 50%, transparent) !important;
             border-radius: 10px !important;
-            padding: 4px 8px !important;
-            margin-top: 6px !important;
+            padding: 6px 0.75rem !important;
+            margin-bottom: 6px !important;
         }}
         .st-key-fixed_header_shell [data-testid="stRadio"] label > div:first-child,
         .st-key-fixed_header_shell [data-testid="stRadio"] input[type="radio"] {{
@@ -1658,7 +1658,7 @@ if active_tab == "Sevkiyat & Ceza Analizi":
                     font=dict(size=13.5, color=active_theme["text_primary"])
                 ),
                 height=265,
-                margin=dict(l=16, r=16, t=48, b=24),
+                margin=dict(l=16, r=16, t=58, b=24),
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 font=dict(color=active_theme["text_primary"], family=selected_font_name),
@@ -1673,6 +1673,7 @@ if active_tab == "Sevkiyat & Ceza Analizi":
                     tickfont=dict(color=active_theme["text_secondary"])
                 )
             )
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
             st.plotly_chart(fig, use_container_width=True)
 
         with mid_right:
