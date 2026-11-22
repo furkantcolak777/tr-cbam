@@ -561,18 +561,42 @@ def inject_design_system(theme_name: str, font_name: str):
                 font-size: 0.78rem !important;
                 white-space: nowrap !important;
             }}
-            .topbar-desc, .topbar-sep, .compliance-pill {{
+            .topbar-sep {{
                 display: none !important;
             }}
             .compact-topbar {{
-                flex-wrap: nowrap !important;
-                white-space: nowrap !important;
+                flex-wrap: wrap !important;
+                white-space: normal !important;
                 overflow: visible !important;
-                padding: 7px 12px !important;
-                min-height: 38px !important;
+                padding: 8px 10px !important;
+                gap: 4px !important;
+            }}
+            .topbar-left {{
+                display: flex !important;
+                flex-wrap: wrap !important;
+                align-items: center !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }}
+            .brand-mark {{
+                font-size: 0.98rem !important;
+            }}
+            .compliance-pill {{
+                display: inline-block !important;
+                font-size: 0.66rem !important;
+                padding: 2px 7px !important;
+            }}
+            .topbar-desc {{
+                display: block !important;
+                order: 3 !important;
+                width: 100% !important;
+                font-size: 0.72rem !important;
+                line-height: 1.25 !important;
             }}
             .compact-topbar > div:last-child {{
-                display: none !important;
+                display: block !important;
+                font-size: 0.72rem !important;
+                margin-left: auto !important;
             }}
             .st-key-desktop_nav_box {{
                 display: none !important;
