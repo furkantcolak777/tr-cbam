@@ -559,13 +559,8 @@ def inject_design_system(theme_name: str, font_name: str):
             .compact-topbar > div:last-child {{
                 display: none !important;
             }}
-            /* Gizli radyo kutusunun yer kaplamasını sıfırla */
-            .st-key-fixed_header_shell > div > div > div:has([data-testid="stRadio"]) {{
+            .st-key-desktop_nav_box {{
                 display: none !important;
-                height: 0px !important;
-                min-height: 0px !important;
-                margin: 0px !important;
-                padding: 0px !important;
             }}
             .st-key-mobile_nav_box {{
                 margin-top: 0px !important;
@@ -1391,19 +1386,20 @@ with st.container(key="fixed_header_shell"):
         </div>
         """, unsafe_allow_html=True)
 
-    active_tab = st.radio(
-        "Navigasyon",
-        [
-            "Sevkiyat & Ceza Analizi",
-            "Gümrük Müşaviri Referral",
-            "ERP Veri Aktarımı",
-            "Tedarikçi (Precursor) Portalı",
-            "Çoklu Sevkiyat & 50t Eşiği",
-            "Resmi Katalog"
-        ],
-        horizontal=True,
-        label_visibility="collapsed"
-    )
+    with st.container(key="desktop_nav_box"):
+        active_tab = st.radio(
+            "Navigasyon",
+            [
+                "Sevkiyat & Ceza Analizi",
+                "Gümrük Müşaviri Referral",
+                "ERP Veri Aktarımı",
+                "Tedarikçi (Precursor) Portalı",
+                "Çoklu Sevkiyat & 50t Eşiği",
+                "Resmi Katalog"
+            ],
+            horizontal=True,
+            label_visibility="collapsed"
+        )
 
     with st.container(key="mobile_nav_box"):
         with st.popover("☰ Modüller: " + active_tab, use_container_width=True):
