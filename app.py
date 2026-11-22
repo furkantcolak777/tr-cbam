@@ -504,6 +504,14 @@ def inject_design_system(theme_name: str, font_name: str):
             }}
         }}
         @media (max-width: 768px) {{
+            .st-key-fixed_header_shell [data-testid="stPopover"] {{
+                margin-top: 6px !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
+                padding: 8px 10px !important;
+                min-height: 40px !important;
+                width: 100% !important;
+            }}
             .st-key-fixed_header_shell {{
                 position: relative !important;
                 top: auto !important;
@@ -1674,7 +1682,6 @@ if active_tab == "Sevkiyat & Ceza Analizi":
                 )
             )
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-            st.plotly_chart(fig, use_container_width=True)
 
         with mid_right:
             score_color = active_theme["success"] if score >= 80 else (active_theme["accent"] if score >= 60 else active_theme["danger"])
