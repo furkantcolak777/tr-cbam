@@ -507,14 +507,14 @@ def inject_design_system(theme_name: str, font_name: str):
             .st-key-fixed_header_shell {{
                 position: relative !important;
                 top: auto !important;
-                padding: 8px 0.75rem !important;
+                padding: 8px 0.75rem 6px 0.75rem !important;
                 margin-bottom: 10px !important;
             }}
             .block-container {{
                 padding-top: 0.6rem !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stVerticalBlock"],
-            .st-key-fixed_header_shell [data-testid="stColumn"] > div {{
+            .st-key-fixed_header_shell > div > [data-testid="stVerticalBlock"],
+            .st-key-fixed_header_shell [data-testid="stVerticalBlock"] {{
                 gap: 4px !important;
             }}
             .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
@@ -528,8 +528,16 @@ def inject_design_system(theme_name: str, font_name: str):
                 width: 100% !important;
                 flex: 1 1 100% !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stColumn"]:not(:first-child) {{
+            .st-key-fixed_header_shell [data-testid="stColumn"]:nth-child(2) {{
                 flex: 1 1 0 !important;
+                min-width: 0 !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stColumn"]:nth-child(3) {{
+                flex: 0.75 1 0 !important;
+                min-width: 0 !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stColumn"]:nth-child(4) {{
+                flex: 1.45 1 0 !important;
                 min-width: 0 !important;
             }}
             .st-key-fixed_header_shell [data-testid="stPopover"] {{
@@ -537,9 +545,13 @@ def inject_design_system(theme_name: str, font_name: str):
                 margin-bottom: 0px !important;
             }}
             .st-key-fixed_header_shell [data-testid="stPopoverButton"] {{
-                padding: 7px 10px !important;
+                padding: 7px 6px !important;
                 min-height: 38px !important;
                 width: 100% !important;
+            }}
+            .st-key-fixed_header_shell [data-testid="stPopoverButton"] p {{
+                font-size: 0.78rem !important;
+                white-space: nowrap !important;
             }}
             .topbar-desc, .topbar-sep, .compliance-pill {{
                 display: none !important;
@@ -558,7 +570,7 @@ def inject_design_system(theme_name: str, font_name: str):
                 display: none !important;
             }}
             .st-key-mobile_nav_box {{
-                margin-top: -18px !important;
+                margin-top: -12px !important;
             }}
         }}
         
