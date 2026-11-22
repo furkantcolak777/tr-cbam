@@ -158,6 +158,9 @@ def inject_design_system(theme_name: str, font_name: str):
 
     st.markdown(f"""
     <style>
+        @import url('https://fonts.googleapis.com/css2?family={font_query}&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+        [data-testid="stAlert"],
 
     [data-testid="stAlert"],
     [data-testid="stAlert"] > div {{
@@ -178,7 +181,6 @@ def inject_design_system(theme_name: str, font_name: str):
             fill: {t['accent']} !important;
             color: {t['accent']} !important;
         }}
-        @import url('https://fonts.googleapis.com/css2?family={font_query}&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
         :root {{
             --shell-bg: {t['shell_bg']};
@@ -275,12 +277,10 @@ def inject_design_system(theme_name: str, font_name: str):
         /* GLOBAL DYNAMIC FONT SYSTEM */
         .stApp,
         .stApp p,
-        .stApp span,
         .stApp label,
         .stApp input,
         .stApp textarea,
         .stApp select,
-        .stApp button,
         .stApp h1,
         .stApp h2,
         .stApp h3,
@@ -290,13 +290,32 @@ def inject_design_system(theme_name: str, font_name: str):
         .stApp li,
         .stApp td,
         .stApp th,
-        .stApp a,
-        .stApp [data-testid="stMarkdownContainer"],
-        .stApp [data-testid="stMarkdownContainer"] *,
-        .stApp [data-testid="stWidgetLabel"] *,
-        .stApp [data-baseweb="radio"] label div,
-        .stApp [data-baseweb="checkbox"] label div {{
+        [data-testid="stMarkdownContainer"] p,
+        [data-testid="stMarkdownContainer"] strong,
+        [data-testid="stWidgetLabel"] p,
+        [data-baseweb="radio"] label div,
+        [data-baseweb="checkbox"] label div {{
+            color: {t['text_primary']} !important;
             font-family: '{font_name}', sans-serif !important;
+        }}
+
+        /* INPUT PLACEHOLDER */
+        .stApp input::placeholder,
+        .stApp textarea::placeholder {{
+            color: {t['text_secondary']} !important;
+            -webkit-text-fill-color: {t['text_secondary']} !important;
+        }}
+
+        /* BUTTON FONT */
+        .stApp button p {{
+            font-family: '{font_name}', sans-serif !important;
+        }}
+
+        /* MONOSPACE */
+        .stApp code,
+        .stApp pre,
+        .stApp .card-kpi {{
+            font-family: 'JetBrains Mono', monospace !important;
         }}
 
         /* Teknik kod alanları */
