@@ -503,21 +503,36 @@ def inject_design_system(theme_name: str, font_name: str):
                 padding-top: 145px !important;
             }}
         }}
-        @media (max-width: 768px) {{
+                @media (max-width: 768px) {{
             .st-key-fixed_header_shell {{
                 position: relative !important;
                 top: auto !important;
                 padding: 8px 0.75rem !important;
                 margin-bottom: 8px !important;
+                gap: 0px !important;
+                row-gap: 0px !important;
             }}
             .block-container {{
                 padding-top: 0.6rem !important;
             }}
-            .st-key-fixed_header_shell [data-testid="stVerticalBlock"],
-            .st-key-fixed_header_shell [data-testid="stVerticalBlock"] > div {{
+
+            /* DÜZELTME 1: kabuğun kendi dikey boşluğunu da sıfırla */
+            .st-key-fixed_header_shell > [data-testid="stVerticalBlock"],
+            .st-key-fixed_header_shell [data-testid="stVerticalBlock"] {{
                 gap: 0px !important;
                 row-gap: 0px !important;
             }}
+            /* DÜZELTME 2: sadece <style> taşıyan görünmez kutu boşluk yaratmasın */
+            .st-key-fixed_header_shell [data-testid="stElementContainer"]:has(style),
+            .st-key-fixed_header_shell .element-container:has(style) {{
+                display: none !important;
+            }}
+            /* DÜZELTME 3: markdown'ın -1rem alt marjı üst çubuğu butonların altında bırakıyordu */
+            .st-key-fixed_header_shell [data-testid="stMarkdown"],
+            .st-key-fixed_header_shell [data-testid="stMarkdownContainer"] {{
+                margin-bottom: 0 !important;
+            }}
+
             .st-key-fixed_header_shell [data-testid="stHorizontalBlock"] {{
                 display: flex !important;
                 flex-direction: row !important;
