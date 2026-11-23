@@ -978,6 +978,37 @@ def extract_energy_from_file(uploaded_file):
     except Exception:
         return None, None
 
+BATCH_COLS = ["Urun_Adi", "CN_Kodu", "Rota", "Tesis_Uretim_Ton", "AB_Sevkiyat_Ton",
+              "Dogalgaz_m3", "Elektrik_kWh", "Oncul_CN", "Oncul_mi"]
+
+def _norm_col(c):
+    s = str(c).strip().translate(str.maketrans("ÇĞİÖŞÜçğıöşü", "CGIOSUcgiosu")).lower()
+    return re.sub(r"[^a-z0-9]", "", s)
+
+_BATCH_ALIASES = {_norm_col(c): c for c in BATCH_COLS}
+_BATCH_ALIASES.update({
+    "cn": "CN_Kodu", "gtip": "CN_Kodu", "gtipkodu": "CN_Kodu",
+    "abtonaj": "AB_Sevkiyat_Ton",
+    "dogalgaz": "Dogalgaz_m3", "dogalgazm": "Dogalgaz_m3",
+    "elektrik": "Elektrik_kWh",
+})
+
+def read_batch_excel(file):
+    sheets = pd.read_excel(file, sheet_name=None, header=None)
+    for raw in sheets.values():
+        for h in range(min(10, len(raw))):
+            idx, names = [], []
+            for j, v in enumerate(raw.iloc[h]):
+                canon = _BATCH_ALIASES.get(_norm_col(v))
+                if canon and canon not in names:
+                    idx.append(j)
+                    names.append(canon)
+            if "CN_Kodu" in names and "AB_Sevkiyat_Ton" in names:
+                df = raw.iloc[h + 1:, idx].copy()
+                df.columns = names
+                return df.dropna(subset=["CN_Kodu"]).reset_index(drop=True)
+    return None
+
 # --- AKREDİTE DOĞRULAYICI (VERIFIER) ÖN-KONTROL MATRİSİ ---
 def run_verifier_audit_matrix(
     cn_code, sector, route_tag, eu_tonnage, total_prod_ton,
@@ -2021,37 +2052,6 @@ Saygılarımızla,
 # ==============================================================================
 # SEKME 5: ÇOKLU SEVKİYAT & 50 TON EŞİĞİ
 # ==============================================================================
-BATCH_COLS = ["Urun_Adi", "CN_Kodu", "Rota", "Tesis_Uretim_Ton", "AB_Sevkiyat_Ton",
-              "Dogalgaz_m3", "Elektrik_kWh", "Oncul_CN", "Oncul_mi"]
-
-def _norm_col(c):
-    s = str(c).strip().translate(str.maketrans("ÇĞİÖŞÜçğıöşü", "CGIOSUcgiosu")).lower()
-    return re.sub(r"[^a-z0-9]", "", s)
-
-_BATCH_ALIASES = {_norm_col(c): c for c in BATCH_COLS}
-_BATCH_ALIASES.update({
-    "cn": "CN_Kodu", "gtip": "CN_Kodu", "gtipkodu": "CN_Kodu",
-    "abtonaj": "AB_Sevkiyat_Ton",
-    "dogalgaz": "Dogalgaz_m3", "dogalgazm": "Dogalgaz_m3",
-    "elektrik": "Elektrik_kWh",
-})
-
-def read_batch_excel(file):
-    sheets = pd.read_excel(file, sheet_name=None, header=None)
-    for raw in sheets.values():
-        for h in range(min(10, len(raw))):
-            idx, names = [], []
-            for j, v in enumerate(raw.iloc[h]):
-                canon = _BATCH_ALIASES.get(_norm_col(v))
-                if canon and canon not in names:
-                    idx.append(j)
-                    names.append(canon)
-            if "CN_Kodu" in names and "AB_Sevkiyat_Ton" in names:
-                df = raw.iloc[h + 1:, idx].copy()
-                df.columns = names
-                return df.dropna(subset=["CN_Kodu"]).reset_index(drop=True)
-    return None
-
 elif active_tab == "Çoklu Sevkiyat & 50t Eşiği":
     st.subheader("📊 Çoklu Sevkiyat Analizi & (EU) 2025/2083 Madde 2a Kümülatif 50 Ton Kontrolü")
     sample_df = pd.DataFrame([
