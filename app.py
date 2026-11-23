@@ -775,6 +775,30 @@ def decrypt_vault_payload(file_bytes: bytes, passphrase: str) -> dict:
     salt = base64.b64decode(envelope["salt_b64"])
     f = Fernet(_derive_key(passphrase, salt))
     return json.loads(f.decrypt(envelope["token_b64"].encode("ascii")).decode("utf-8"))
+import hmac, hashlib
+
+LICENSE_SECRET = b"TR-CBAM-ENTERPRISE-2026-SIGNING-KEY"
+
+def generate_license_key(org_name: str, max_installations: int, expires_str: str) -> str:
+    payload = json.dumps({"org": org_name, "max": max_installations, "exp": expires_str}, separators=(",", ":")).encode("utf-8")
+    b64 = base64.urlsafe_b64encode(payload).decode("ascii")
+    sig = hmac.new(LICENSE_SECRET, b64.encode("ascii"), hashlib.sha256).hexdigest()[:16]
+    return f"{b64}.{sig}"
+
+def verify_license_key(lic_str: str) -> dict:
+    if not lic_str or "." not in lic_str:
+        return {"valid": True, "org": "Demo / Ücretsiz Deneme", "max": 1, "exp": "2099-12-31", "is_demo": True}
+    try:
+        b64, sig = lic_str.strip().split(".", 1)
+        expected = hmac.new(LICENSE_SECRET, b64.encode("ascii"), hashlib.sha256).hexdigest()[:16]
+        if not hmac.compare_digest(sig, expected):
+            return {"valid": False, "error": "Geçersiz lisans imzası"}
+        data = json.loads(base64.urlsafe_b64decode(b64.encode("ascii")).decode("utf-8"))
+        if datetime.now().strftime("%Y-%m-%d") > data["exp"]:
+            return {"valid": False, "error": f"Lisans süresi dolmuş ({data['exp']})"}
+        return {"valid": True, "org": data["org"], "max": int(data["max"]), "exp": data["exp"], "is_demo": False}
+    except Exception:
+        return {"valid": False, "error": "Bozuk lisans anahtarı"}
 
 # --- RESMİ EXCEL / KATALOG YÜKLEYİCİ (570 CN KODU) ---
 def _parse_num(val):
@@ -1388,7 +1412,7 @@ def generate_corporate_pdf_core(meta, res, audit_summary, logo_bytes=None):
     pdf.ln(1)
     pdf.set_font(font_name, "", 6.9)
     pdf.set_text_color(75, 75, 75)
-    pdf.multi_cell(0, 3.6, t("Mevzuat & Veri Güvenliği Beyanı: Bu rapor (EU) 2023/956, (EU) 2025/2083, (EU) 2025/2547, (EU) 2025/2620, (EU) 2025/2621, (EU) 2026/1740 ve (EU) 2026/2498 sayılı AB SKDM tüzüklerine uygun hazırlanmıştır. Tesis verileri istemci parolasıyla AES-256 şifreli .cbamvault dosyasında saklanır."))
+    pdf.multi_cell(0, 3.6, t(f"Mevzuat & Veri Güvenliği Beyanı: Bu rapor {meta['broker_name']} teknik altyapısı ile (EU) 2023/956, (EU) 2025/2083, (EU) 2025/2547, (EU) 2025/2620, (EU) 2025/2621, (EU) 2026/1740 ve (EU) 2026/2498 sayılı AB SKDM tüzüklerine uygun hazırlanmıştır. Tesis verileri istemci parolasıyla AES-256 şifrelenerek saklanır."))
 
     out_bytes = bytes(pdf.output())
     if temp_logo and os.path.exists(temp_logo):
@@ -1423,13 +1447,20 @@ if "last_audit_findings" not in st.session_state:
 
 vd = st.session_state["vault_data"]
 
-broker_name = "TR-CBAM Kurumsal Uyum"
+if "broker_name" not in st.session_state:
+    st.session_state["broker_name"] = "TR-CBAM Kurumsal Uyum"
+if "verifier_id" not in st.session_state:
+    st.session_state["verifier_id"] = "PENDING-VERIFIER-2026"
+if "vault_pass" not in st.session_state:
+    st.session_state["vault_pass"] = ""
+
+broker_name = st.session_state["broker_name"]
 broker_logo = None
 installation_id = vd["installation_id"]
 unlocode = vd["unlocode"]
 coordinates = vd["coordinates"]
-verifier_id = "PENDING-VERIFIER-2026"
-vault_pass = ""
+verifier_id = st.session_state["verifier_id"]
+vault_pass = st.session_state["vault_pass"]
 
 # --- SABİT ÜST KABUK (BAŞLIK + KONTROLLER + 6 SEKME TEK PARÇA) ---
 with st.container(key="fixed_header_shell"):
@@ -1582,13 +1613,16 @@ if active_tab == "Sevkiyat & Ceza Analizi":
         invoice_status = "Kanıt Belgesi Yüklenmedi"
         if invoice_file:
             dk, dg = extract_energy_from_file(invoice_file)
-            invoice_status = f"Doğrulandı: {invoice_file.name}"
-            if dk:
-                auto_kwh = dk
-                st.success(f"Elektrik okundu: **{dk:,.2f} kWh**")
-            if dg:
-                auto_gas = dg
-                st.success(f"Doğalgaz okundu: **{dg:,.2f} m³**")
+            invoice_status = f"Belge Yüklendi: {invoice_file.name}"
+            if dk or dg:
+                st.info(f"📄 OCR Tespiti — Elektrik: **{dk:,.2f} kWh** | Doğalgaz: **{dg:,.2f} m³**" if (dk and dg) else (f"📄 OCR Tespiti — Elektrik: **{dk:,.2f} kWh**" if dk else f"📄 OCR Tespiti — Doğalgaz: **{dg:,.2f} m³**"))
+                if st.checkbox("✅ Okunan bu değerlerin dönemlik aktif tüketim olduğunu onaylıyorum ve forma aktar", value=False):
+                    if dk:
+                        auto_kwh = dk
+                    if dg:
+                        auto_gas = dg
+            else:
+                st.warning("Faturadan otomatik tüketim okunamadı; değerleri aşağıya manuel giriniz.")
 
         with st.form("cbam_main_form"):
             company_name = st.text_input("İhracatçı Firma Unvanı (TR)", value=vd["company_name"])
@@ -1642,16 +1676,17 @@ if active_tab == "Sevkiyat & Ceza Analizi":
             run_btn = st.form_submit_button("🛡️ İhracat Ceza Riskini Hesapla & AB Alıcı Raporu Oluştur", use_container_width=True, type="primary")
 
         # Tesis Sicil, White-Label Logo & AES-256 Şifreli Kasa Kapalı Çekmecede
-        with st.expander("⚙️ Gelişmiş Tesis Sicil, White-Label Logo & Şifreli Kasa (.cbamvault)", expanded=False):
-            broker_name = st.text_input("Danışmanlık / Kurum Unvanı (White-Label)", value="TR-CBAM Kurumsal Uyum")
+        with st.expander("⚙️ Gelişmiş Tesis Sicil, White-Label Logo & Şifreli Kasa", expanded=False):
+            broker_name = st.text_input("Danışmanlık / Kurum Unvanı (White-Label)", key="broker_name")
             broker_logo = st.file_uploader("Kurumsal Logo Yükle (PDF Anteti)", type=["png", "jpg", "jpeg"])
             installation_id = st.text_input("CBAM Registry Installation ID", value=vd["installation_id"])
             unlocode = st.text_input("UN/LOCODE", value=vd["unlocode"])
             coordinates = st.text_input("Coğrafi Koordinatlar", value=vd["coordinates"])
-            verifier_id = st.text_input("Akredite Doğrulayıcı ID ((EU) 2025/2547)", value="PENDING-VERIFIER-2026")
+            verifier_id = st.text_input("Akredite Doğrulayıcı ID ((EU) 2025/2547)", key="verifier_id")
+            vd["installation_id"], vd["unlocode"], vd["coordinates"] = installation_id, unlocode, coordinates
 
             st.markdown("---")
-            vault_pass = st.text_input("Tesis Kasa Parolası (AES-256)", type="password", value="")
+            vault_pass = st.text_input("Tesis Kasa Parolası (AES-256)", type="password", key="vault_pass")
             uploaded_vault = st.file_uploader("Kayıtlı Kasa Yükle (.cbamvault)", type=["cbamvault"])
             if uploaded_vault and vault_pass:
                 if st.button("🔓 Kasayı Çöz ve Yükle", use_container_width=True):
@@ -1664,6 +1699,21 @@ if active_tab == "Sevkiyat & Ceza Analizi":
                         st.rerun()
                     except Exception:
                         st.error("Parola hatalı veya kasa dosyası bozuk.")
+            st.markdown("---")
+            lic_input = st.text_input("Kurumsal Lisans Anahtarı", value=st.session_state.get("lic_key", ""), placeholder="Boş bırakılırsa Demo (1 Tesis) çalışır")
+            st.session_state["lic_key"] = lic_input
+            lic_info = verify_license_key(lic_input)
+            if not lic_info["valid"]:
+                st.error(f"🔒 {lic_info['error']}")
+                st.stop()
+            st.caption(f"Lisans: **{lic_info['org']}** | Maks. Tesis Kotası: **{lic_info['max']}** | Bitiş: **{lic_info['exp']}**")
+
+            used_insts = st.session_state.setdefault("licensed_installations", set())
+            if installation_id.strip():
+                if installation_id.strip() not in used_insts and len(used_insts) >= lic_info["max"]:
+                    st.error(f"🚫 Lisans tesis kotası ({lic_info['max']} tesis) doldu. Yeni tesis ID'si ({installation_id}) için üst pakete geçin.")
+                    st.stop()
+                used_insts.add(installation_id.strip())
 
     # Başlangıç ve Güncel Hesaplama Durumu
     if not run_btn and "cached_run" not in st.session_state:
@@ -1876,7 +1926,7 @@ Müşavirliğimiz aracılığıyla tescil edilen {gm_dec_no} referanslı ({forma
 
 Tesis enerji veriniz AB ithalatçısına iletilmediği takdirde, AB gümrüğünde varsayılan ceza tarifesi üzerinden yaklaşık {est_def_tax:,.0f} € sertifika maliyeti oluşmakta ve ithalatçı müşteriniz bu farkı faturanızdan kesme/sipariş iptali hakkı kazanmaktadır.
 
-TR-CBAM platformu üzerinden dönemlik elektrik ve doğalgaz tüketiminizi girerek bu maliyetin yaklaşık {est_save:,.0f} € tutarındaki kısmını sıfırlayabilir ve AB alıcınıza özel teklif belgesi oluşturabilirsiniz.
+{broker_name} uyum iş akışı üzerinden dönemlik elektrik ve doğalgaz tüketiminizi ileterek bu maliyetin yaklaşık {est_save:,.0f} € tutarındaki kısmını sıfırlayabilir ve AB alıcınıza özel teklif belgesi oluşturabilirsiniz.
 
 Saygılarımızla,
 {broker_name}"""
