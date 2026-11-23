@@ -777,7 +777,19 @@ def decrypt_vault_payload(file_bytes: bytes, passphrase: str) -> dict:
     return json.loads(f.decrypt(envelope["token_b64"].encode("ascii")).decode("utf-8"))
 import hmac, hashlib
 
-LICENSE_SECRET = b"TR-CBAM-ENTERPRISE-2026-SIGNING-KEY"
+def _get_license_secret() -> bytes:
+    env_val = os.environ.get("TR_CBAM_LICENSE_SECRET")
+    if env_val:
+        return env_val.encode("utf-8")
+    try:
+        sec_val = st.secrets.get("LICENSE_SECRET")
+        if sec_val:
+            return str(sec_val).encode("utf-8")
+    except Exception:
+        pass
+    return b"FALLBACK-DEV-KEY-CHANGE-IN-PROD"
+
+LICENSE_SECRET = _get_license_secret()
 
 def generate_license_key(org_name: str, max_installations: int, expires_str: str) -> str:
     payload = json.dumps({"org": org_name, "max": max_installations, "exp": expires_str}, separators=(",", ":")).encode("utf-8")
@@ -1562,6 +1574,18 @@ with st.container(key="fixed_header_shell"):
             if mob_tab != active_tab:
                 active_tab = mob_tab
 
+lic_info = verify_license_key(st.session_state.get("lic_key", ""))
+if not lic_info["valid"]:
+    st.error(f"🔒 {lic_info['error']}")
+    st.stop()
+
+used_insts = st.session_state.setdefault("licensed_installations", set())
+if installation_id.strip():
+    if installation_id.strip() not in used_insts and len(used_insts) >= lic_info["max"]:
+        st.error(f"🚫 Lisans tesis kotası ({lic_info['max']} tesis) doldu. Yeni tesis ID'si ({installation_id}) için üst pakete geçin.")
+        st.stop()
+    used_insts.add(installation_id.strip())
+
 # ==============================================================================
 # SEKME 1: SEVKİYAT & CEZA ANALİZİ
 # ==============================================================================
@@ -1701,19 +1725,11 @@ if active_tab == "Sevkiyat & Ceza Analizi":
                         st.error("Parola hatalı veya kasa dosyası bozuk.")
             st.markdown("---")
             lic_input = st.text_input("Kurumsal Lisans Anahtarı", value=st.session_state.get("lic_key", ""), placeholder="Boş bırakılırsa Demo (1 Tesis) çalışır")
-            st.session_state["lic_key"] = lic_input
-            lic_info = verify_license_key(lic_input)
-            if not lic_info["valid"]:
-                st.error(f"🔒 {lic_info['error']}")
-                st.stop()
-            st.caption(f"Lisans: **{lic_info['org']}** | Maks. Tesis Kotası: **{lic_info['max']}** | Bitiş: **{lic_info['exp']}**")
-
-            used_insts = st.session_state.setdefault("licensed_installations", set())
-            if installation_id.strip():
-                if installation_id.strip() not in used_insts and len(used_insts) >= lic_info["max"]:
-                    st.error(f"🚫 Lisans tesis kotası ({lic_info['max']} tesis) doldu. Yeni tesis ID'si ({installation_id}) için üst pakete geçin.")
-                    st.stop()
-                used_insts.add(installation_id.strip())
+            if lic_input != st.session_state.get("lic_key", ""):
+                st.session_state["lic_key"] = lic_input
+                st.rerun()
+            _cur_lic = verify_license_key(st.session_state.get("lic_key", ""))
+            st.caption(f"Lisans: **{_cur_lic.get('org', 'Geçersiz')}** | Maks. Tesis Kotası: **{_cur_lic.get('max', 0)}** | Bitiş: **{_cur_lic.get('exp', '-')}**")
 
     # Başlangıç ve Güncel Hesaplama Durumu
     if not run_btn and "cached_run" not in st.session_state:
@@ -2022,6 +2038,9 @@ elif active_tab == "Çoklu Sevkiyat & 50t Eşiği":
     if up_xlsx:
         try:
             df_in = pd.read_excel(up_xlsx)
+            if len(df_in) > lic_info["max"]:
+                st.error(f"🚫 Yüklenen satır sayısı ({len(df_in)}), mevcut lisans tesis/sevkiyat kotanızı ({lic_info['max']}) aşıyor.")
+                st.stop()
             batch_res, table_rows = [], []
             cum_mass = 0.0
 
